@@ -9,7 +9,7 @@
 
 ### Hint
    - In order to draw a circle, you can use the formula o+r*(cos(angle), sin(angle))
-   - How to draw a line with point?
+   - How to draw a line with points?
 
 ### Reference
   - You can find plenty of information about GLFW here -> http://www.glfw.org/docs/latest/
