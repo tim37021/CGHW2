@@ -13,3 +13,4 @@
 
 ### Reference
   - You can find plenty of information about GLFW here -> http://www.glfw.org/docs/latest/
+  - WaveFront Obj file format spec - https://hackpad.com/WaveFront-Obj-File-Format-KHu5n6qlmlc
