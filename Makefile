@@ -1,7 +1,7 @@
 CXX = g++
 
-CXXFLAGS = -std=c++0x -g `pkg-config --cflags sdl2 gl`
-LIBS = `pkg-config --libs sdl2 gl`
+CXXFLAGS = -std=c++0x -g -I./inc
+LIBS = -L./lib -lglfw3 -lopengl32 -lgdi32
 
 OUT_EXE = HW2
 
