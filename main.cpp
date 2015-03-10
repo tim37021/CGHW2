@@ -44,9 +44,5 @@ int main(void)
 static void render()
 {
     GLWrapper::clearScreen();
-    // Complete your code here
-    // if a is press??
     HW2::drawCircle(0, 0, 0.25, 200);
-    // else draw Model
-
 }
