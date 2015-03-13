@@ -5,7 +5,8 @@ namespace GLWrapper
 {
 	void clearScreen();
 	void drawPoint(float, float);
-	void setPointColor(float r, float g, float b);
+	void drawPoint(float, float, float);
+	void setColor(float r, float g, float b);
 	void drawLine(float x1, float y1, float x2, float y2);
 	void drawTriangle(float x1, float y1, float x2, float y2,
 		float x3, float y3);

@@ -40,6 +40,8 @@ int main(void)
     std::ifstream fin("untitled.obj");
     SRenderer::loadObjMesh(fin, &mesh);
 
+    glEnable(GL_DEPTH_TEST);
+
     //prepare renderer
     renderer = new SRenderer::SRenderer(320, 320, myVertexShader, nullptr);
 

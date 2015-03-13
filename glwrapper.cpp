@@ -5,7 +5,7 @@
 
 void GLWrapper::clearScreen()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
 void GLWrapper::drawPoint(float x, float y)
@@ -15,7 +15,14 @@ void GLWrapper::drawPoint(float x, float y)
 	glEnd();
 }
 
-void GLWrapper::setPointColor(float r, float g, float b)
+void GLWrapper::drawPoint(float x, float y, float z)
+{
+	glBegin(GL_POINTS);
+	glVertex3f(x, y, z);
+	glEnd();
+}
+
+void GLWrapper::setColor(float r, float g, float b)
 {
 	glColor3f(r, g, b);
 }
