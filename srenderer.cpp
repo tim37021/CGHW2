@@ -1,5 +1,4 @@
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include "srenderer.h"
 #include "glwrapper.h"
 
