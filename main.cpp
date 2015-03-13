@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <cstdlib>
+#include <cmath>
 #include "hw2.h"
 #include "glwrapper.h"
 #include "mesh.h"
@@ -76,7 +77,7 @@ static void keyCallback(
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
 {
     SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
-    vout->x=in.x/2.0f;
-    vout->y=in.y/2.0f;
-    vout->z=in.z/2.0f;
+    vout->x=in.x*std::abs(std::sin(glfwGetTime()));
+    vout->y=in.y*std::abs(std::sin(glfwGetTime()));
+    vout->z=in.z;
 }

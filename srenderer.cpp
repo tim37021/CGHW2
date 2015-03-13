@@ -1,4 +1,5 @@
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include "srenderer.h"
 #include "glwrapper.h"
 
@@ -48,7 +49,7 @@ namespace SRenderer
 			}
 			
 			// Call to SRenderer::drawTriangle
-			drawTriangle(vo, va, vb);
+			drawFilledTriangle(vo, va, vb);
 		}
 	}
 
@@ -78,21 +79,22 @@ namespace SRenderer
 		float lo=abs(a.y-b.y), la=abs(o.y-b.y), lb=abs(o.y-a.y);
 		const Vertex *bottom=&o, *top=&a, *mid=&b;
 
-		if(lo>la&&lo>lb)
+
+		if(lo>=la&&lo>=lb)
 		{
 			bottom=(a.y<b.y)? &a: &b;
 			top=(a.y>b.y)? &a: &b;
 			mid=&o;
 		}
 
-		if(la>lo&&la>lb)
+		if(la>=lo&&la>=lb)
 		{
 			bottom=(o.y<b.y)? &o: &b;
 			top=(o.y>b.y)? &o: &b;
 			mid=&a;
 		}
 
-		if(lb>lo&&lb>la)
+		if(lb>=lo&&lb>=la)
 		{
 			bottom=(o.y<a.y)? &o: &a;
 			top=(o.y>a.y)? &o: &a;
@@ -120,7 +122,7 @@ namespace SRenderer
 			float x2=(c2-bx*y)/by;
 
 			// Scanline samples
-			slsamples=abs(x1-x2)/pixelWidth;
+			slsamples=1+abs(x1-x2)/pixelWidth;
 
 			for(int j=0; j<=slsamples; j++)
 			{
@@ -129,8 +131,8 @@ namespace SRenderer
 			y+=(mid->y-bottom->y)/samples;
 		}
 		
-		samples=100;
-		ax=-ax; ay=-ay;
+		samples=1+(abs(top->x-mid->x)>=abs(top->y-mid->y)
+			?abs(top->x-mid->x)/pixelWidth:abs(top->y-mid->y)/pixelWidth);
 		bx=mid->x-top->x; by=mid->y-top->y;
 		c1=ax*top->y-ay*top->x;
 		c2=bx*top->y-by*top->x;
@@ -145,7 +147,7 @@ namespace SRenderer
 			float x2=(c2-bx*y)/by;
 
 			// Scanline samples
-			slsamples=abs(x1-x2)/pixelWidth;
+			slsamples=1+abs(x1-x2)/pixelWidth;
 
 			for(int j=0; j<=slsamples; j++)
 			{
