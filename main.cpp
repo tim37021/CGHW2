@@ -1,10 +1,17 @@
 #include <GLFW/glfw3.h>
+#include <fstream>
 #include <cstdlib>
 #include "hw2.h"
 #include "glwrapper.h"
+#include "mesh.h"
+#include "srenderer.h"
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
+static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out);
+
+SRenderer::SRenderer *renderer;
+SRenderer::Mesh mesh;
 
 int main(void)
 {
@@ -25,9 +32,15 @@ int main(void)
     // Prepare event callback functions
     glfwSetKeyCallback(window, keyCallback);
 
-
     // Make the window's context current
     glfwMakeContextCurrent(window);
+
+    // Load necessary files
+    std::ifstream fin("untitled.obj");
+    SRenderer::loadObjMesh(fin, &mesh);
+
+    //prepare renderer
+    renderer = new SRenderer::SRenderer(320, 320, myVertexShader, nullptr);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
@@ -49,7 +62,8 @@ int main(void)
 static void render()
 {
     GLWrapper::clearScreen();
-    HW2::drawCircle(0, 0, 0.25, 200);
+    //HW2::drawCircle(0, 0, 0.25, 200);
+    renderer->render(mesh);
 }
 
 static void keyCallback(
@@ -57,4 +71,12 @@ static void keyCallback(
 {
     if(key==GLFW_KEY_ESCAPE&&action==GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
+{
+    SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
+    vout->x=in.x/2.0f;
+    vout->y=in.y/2.0f;
+    vout->z=in.z/2.0f;
 }

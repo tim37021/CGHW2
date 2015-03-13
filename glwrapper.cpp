@@ -38,3 +38,10 @@ void GLWrapper::drawLine(float x1, float y1, float x2, float y2)
 	for(int i=0; i<=samples; i++)
 		drawPoint(x1+dx*i, y1+dy*i);
 }
+
+void GLWrapper::drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	drawLine(x1, y1, x2, y2);
+	drawLine(x1, y1, x3, y3);
+	drawLine(x2, y2, x3, y3);
+}
