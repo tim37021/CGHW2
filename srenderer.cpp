@@ -104,55 +104,39 @@ namespace SRenderer
 		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
 		int samples=1+(abs(mid->x-bottom->x)>=abs(mid->y-bottom->y)
 			?abs(mid->x-bottom->x)/pixelWidth:abs(mid->y-bottom->y)/pixelWidth);
-
-		//ayX-axy+c1=0
-		float ax=top->x-bottom->x, ay=top->y-bottom->y;
-		float bx=mid->x-bottom->x, by=mid->y-bottom->y;
-		float c1=ax*bottom->y-ay*bottom->x;
-		float c2=bx*bottom->y-by*bottom->x;
-
+		
 		float y=bottom->y;
-		int slsamples;
 
 		// Step 3 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
-			// Scanline and draw
-			float x1=(c1-ax*y)/ay;
-			float x2=(c2-bx*y)/by;
 
-			// Scanline samples
-			slsamples=1+abs(x1-x2)/pixelWidth;
+			if(abs(mid->y-bottom->y)<=1e-6) 
+				continue;
 
-			for(int j=0; j<=slsamples; j++)
-			{
-				GLWrapper::drawPoint(x1+j*(x2-x1)/slsamples, y);
-			}
+			const Vertex &left=bottom->interpolate(*top, (y-bottom->y)/(top->y-bottom->y));
+			const Vertex &right=bottom->interpolate(*mid, (y-bottom->y)/(mid->y-bottom->y));
+
+			drawLine(right, left);
+			
 			y+=(mid->y-bottom->y)/samples;
 		}
-		
+
 		samples=1+(abs(top->x-mid->x)>=abs(top->y-mid->y)
 			?abs(top->x-mid->x)/pixelWidth:abs(top->y-mid->y)/pixelWidth);
-		bx=mid->x-top->x; by=mid->y-top->y;
-		c1=ax*top->y-ay*top->x;
-		c2=bx*top->y-by*top->x;
-
 		y=top->y;
 
 		// Step 4 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
-			// Scanline and draw
-			float x1=(c1-ax*y)/ay;
-			float x2=(c2-bx*y)/by;
+			if(abs(mid->y-top->y)<=1e-6) 
+				continue;
 
-			// Scanline samples
-			slsamples=1+abs(x1-x2)/pixelWidth;
+			const Vertex &left=top->interpolate(*bottom, (y-top->y)/(bottom->y-top->y));
+			const Vertex &right=top->interpolate(*mid, (y-top->y)/(mid->y-top->y));
 
-			for(int j=0; j<=slsamples; j++)
-			{
-				GLWrapper::drawPoint(x1+j*(x2-x1)/slsamples, y);
-			}
+			drawLine(right, left);
+
 			y+=(mid->y-top->y)/samples;
 		}
 	}
