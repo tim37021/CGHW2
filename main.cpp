@@ -5,11 +5,13 @@
 #include "hw2.h"
 #include "glwrapper.h"
 #include "mesh.h"
+#include "math.h"
 #include "srenderer.h"
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out);
+static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b);
 
 SRenderer::SRenderer *renderer;
 SRenderer::Mesh mesh;
@@ -43,7 +45,7 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
 
     //prepare renderer
-    renderer = new SRenderer::SRenderer(320, 320, myVertexShader, nullptr);
+    renderer = new SRenderer::SRenderer(320, 320, myVertexShader, myFragmentShader);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
@@ -82,4 +84,12 @@ static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatabl
     vout->x=in.x*std::abs(std::sin(glfwGetTime()));
     vout->y=in.y*std::abs(std::sin(glfwGetTime()));
     vout->z=in.z;
+}
+
+static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b)
+{
+    const SRenderer::Vertex &vout=reinterpret_cast<const SRenderer::Vertex &>(in);
+    *r = vout.r;
+    *g = vout.g;
+    *b = vout.b;
 }

@@ -3,6 +3,7 @@
 #include <sstream>
 #include "mesh.h"
 #include <iostream>
+#include <cmath>
 
 // trim from start
 static inline std::string &ltrim(std::string &s) {
@@ -38,7 +39,11 @@ void SRenderer::loadObjMesh(std::istream &in, SRenderer::Mesh *out)
 		if(declarator=="v")
 		{
 			ss>>fx>>fy>>fz;
-			out->vertices.push_back({fx, fy, fz});
+			Vertex tmp(fx, fy, fz);
+			tmp.r=(float)rand()/RAND_MAX;
+			tmp.g=(float)rand()/RAND_MAX;
+			tmp.b=(float)rand()/RAND_MAX;
+			out->vertices.push_back(tmp);
 		}
 		if(declarator=="f")
 		{

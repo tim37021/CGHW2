@@ -17,6 +17,10 @@ namespace SRenderer{
 		result.y=y*(1.0f-t)+endValue.y*t;
 		result.z=z*(1.0f-t)+endValue.z*t;
 
+		result.r=r*(1.0f-t)+endValue.r*t;
+		result.g=g*(1.0f-t)+endValue.g*t;
+		result.b=b*(1.0f-t)+endValue.b*t;
+
 		return result;
 	}
 

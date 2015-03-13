@@ -15,6 +15,7 @@ namespace SRenderer
 	struct Vertex: public Interpolatable<Vertex>
 	{
 		float x, y, z;
+		float r, g, b;
 
 		Vertex()=default;
 		Vertex(float, float, float);

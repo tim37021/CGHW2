@@ -6,6 +6,6 @@
 namespace SRenderer
 {
 	typedef void (*VertexShader)(const Vertex &, Interpolatable<Vertex> *);
-	typedef void (*FragmentShader)(const Interpolatable<Vertex> &, float &r, float &g, float &b);
+	typedef void (*FragmentShader)(const Interpolatable<Vertex> &, float *r, float *g, float *b);
 }
 #endif

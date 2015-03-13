@@ -61,7 +61,13 @@ namespace SRenderer
 		for(int i=0; i<=samples; i++)
 		{
 			const Vertex &v=a.interpolate(b, t);
-			GLWrapper::drawPoint(v.x, v.y);
+			float rf=v.r, gf=v.g, bf=v.b;
+
+			if(fs)
+				fs(v, &rf, &gf, &bf);
+
+			GLWrapper::setColor(rf, gf, bf);
+			GLWrapper::drawPoint(v.x, v.y, v.z);
 			t+=1.0f/samples;
 		}
 	}
