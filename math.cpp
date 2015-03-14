@@ -2,8 +2,14 @@
 
 namespace SRenderer{
 
-	Vertex::Vertex(float x_, float y_, float z_):
-		x(x_), y(y_), z(z_)
+	Vertex::Vertex(const glm::vec3 &pos_):
+		pos(pos_)
+	{
+
+	}
+
+	Vertex::Vertex(const glm::vec3 &pos_, const glm::vec3 &normal_):
+		pos(pos_), normal(normal_)
 	{
 
 	}
@@ -13,13 +19,9 @@ namespace SRenderer{
 	{
 		Vertex result;
 
-		result.x=x*(1.0f-t)+endValue.x*t;
-		result.y=y*(1.0f-t)+endValue.y*t;
-		result.z=z*(1.0f-t)+endValue.z*t;
+		result.pos=pos*(1.0f-t)+endValue.pos*t;
 
-		result.r=r*(1.0f-t)+endValue.r*t;
-		result.g=g*(1.0f-t)+endValue.g*t;
-		result.b=b*(1.0f-t)+endValue.b*t;
+		result.normal=normal*(1.0f-t)+endValue.normal*t;
 
 		return result;
 	}

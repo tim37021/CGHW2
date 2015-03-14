@@ -56,93 +56,92 @@ namespace SRenderer
 	{
 		float t=0.0f;
 
-		int samples=1+(abs(b.x-a.x)>=abs(b.y-a.y)?abs(b.x-a.x)/pixelWidth:abs(b.y-a.y)/pixelWidth);
+		int samples=1+(abs(b.pos.x-a.pos.x)>=abs(b.pos.y-a.pos.y)?abs(b.pos.x-a.pos.x)/pixelWidth:abs(b.pos.y-a.pos.y)/pixelWidth);
 
 		for(int i=0; i<=samples; i++)
 		{
 			const Vertex &v=a.interpolate(b, t);
-			float rf=v.r, gf=v.g, bf=v.b;
+			float rf=1.0f, gf=1.0f, bf=1.0f;
 
 			if(fs)
 				fs(v, &rf, &gf, &bf);
 
 			GLWrapper::setColor(rf, gf, bf);
-			GLWrapper::drawPoint(v.x, v.y, v.z);
+			GLWrapper::drawPoint(v.pos.x, v.pos.y, v.pos.z);
 			t+=1.0f/samples;
 		}
 	}
 
 	void SRenderer::drawTriangle(const Vertex &o, const Vertex a, const Vertex &b)
 	{
-		GLWrapper::drawTriangle(o.x, o.y, a.x, a.y, b.x, b.y);
+		GLWrapper::drawTriangle(o.pos.x, o.pos.y, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
 	}
 
 	void SRenderer::drawFilledTriangle(const Vertex &o, const Vertex a, const Vertex &b)
 	{
-
 		// Step 1 - find max |y'-y|
-		float lo=abs(a.y-b.y), la=abs(o.y-b.y), lb=abs(o.y-a.y);
+		float lo=abs(a.pos.y-b.pos.y), la=abs(o.pos.y-b.pos.y), lb=abs(o.pos.y-a.pos.y);
 		const Vertex *bottom=&o, *top=&a, *mid=&b;
 
 
 		if(lo>=la&&lo>=lb)
 		{
-			bottom=(a.y<b.y)? &a: &b;
-			top=(a.y>b.y)? &a: &b;
+			bottom=(a.pos.y<b.pos.y)? &a: &b;
+			top=(a.pos.y>b.pos.y)? &a: &b;
 			mid=&o;
 		}
 
 		if(la>=lo&&la>=lb)
 		{
-			bottom=(o.y<b.y)? &o: &b;
-			top=(o.y>b.y)? &o: &b;
+			bottom=(o.pos.y<b.pos.y)? &o: &b;
+			top=(o.pos.y>b.pos.y)? &o: &b;
 			mid=&a;
 		}
 
 		if(lb>=lo&&lb>=la)
 		{
-			bottom=(o.y<a.y)? &o: &a;
-			top=(o.y>a.y)? &o: &a;
+			bottom=(o.pos.y<a.pos.y)? &o: &a;
+			top=(o.pos.y>a.pos.y)? &o: &a;
 			mid=&b;
 		}
 
 		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
-		int samples=1+(abs(mid->x-bottom->x)>=abs(mid->y-bottom->y)
-			?abs(mid->x-bottom->x)/pixelWidth:abs(mid->y-bottom->y)/pixelWidth);
+		int samples=1+(abs(mid->pos.x-bottom->pos.x)>=abs(mid->pos.y-bottom->pos.y)
+			?abs(mid->pos.x-bottom->pos.x)/pixelWidth:abs(mid->pos.y-bottom->pos.y)/pixelWidth);
 		
-		float y=bottom->y;
+		float y=bottom->pos.y;
 
 		// Step 3 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
 
-			if(abs(mid->y-bottom->y)<=1e-6) 
+			if(abs(mid->pos.y-bottom->pos.y)<=1e-6) 
 				continue;
 
-			const Vertex &left=bottom->interpolate(*top, (y-bottom->y)/(top->y-bottom->y));
-			const Vertex &right=bottom->interpolate(*mid, (y-bottom->y)/(mid->y-bottom->y));
+			const Vertex &left=bottom->interpolate(*top, (y-bottom->pos.y)/(top->pos.y-bottom->pos.y));
+			const Vertex &right=bottom->interpolate(*mid, (y-bottom->pos.y)/(mid->pos.y-bottom->pos.y));
 
 			drawLine(right, left);
 			
-			y+=(mid->y-bottom->y)/samples;
+			y+=(mid->pos.y-bottom->pos.y)/samples;
 		}
 
-		samples=1+(abs(top->x-mid->x)>=abs(top->y-mid->y)
-			?abs(top->x-mid->x)/pixelWidth:abs(top->y-mid->y)/pixelWidth);
-		y=top->y;
+		samples=1+(abs(top->pos.x-mid->pos.x)>=abs(top->pos.y-mid->pos.y)
+			?abs(top->pos.x-mid->pos.x)/pixelWidth:abs(top->pos.y-mid->pos.y)/pixelWidth);
+		y=top->pos.y;
 
 		// Step 4 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
-			if(abs(mid->y-top->y)<=1e-6) 
+			if(abs(mid->pos.y-top->pos.y)<=1e-6) 
 				continue;
 
-			const Vertex &left=top->interpolate(*bottom, (y-top->y)/(bottom->y-top->y));
-			const Vertex &right=top->interpolate(*mid, (y-top->y)/(mid->y-top->y));
+			const Vertex &left=top->interpolate(*bottom, (y-top->pos.y)/(bottom->pos.y-top->pos.y));
+			const Vertex &right=top->interpolate(*mid, (y-top->pos.y)/(mid->pos.y-top->pos.y));
 
 			drawLine(right, left);
 
-			y+=(mid->y-top->y)/samples;
+			y+=(mid->pos.y-top->pos.y)/samples;
 		}
 	}
 }

@@ -81,15 +81,15 @@ static void keyCallback(
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
 {
     SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
-    vout->x=in.x*std::abs(std::sin(glfwGetTime()));
-    vout->y=in.y*std::abs(std::sin(glfwGetTime()));
-    vout->z=in.z;
+    vout->pos.x=in.pos.x;
+    vout->pos.y=in.pos.y;
+    vout->pos.z=in.pos.z;
 }
 
 static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b)
 {
     const SRenderer::Vertex &vout=reinterpret_cast<const SRenderer::Vertex &>(in);
-    *r = vout.r;
-    *g = vout.g;
-    *b = vout.b;
+    *r = vout.normal.x;
+    *g = vout.normal.y;
+    *b = vout.normal.z;
 }

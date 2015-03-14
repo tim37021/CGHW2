@@ -1,6 +1,8 @@
 #ifndef _VERTEX_H_
 #define _VERTEX_H_
 
+#include <glm/vec3.hpp>
+
 namespace SRenderer
 {
 	template <class T>
@@ -14,11 +16,12 @@ namespace SRenderer
 
 	struct Vertex: public Interpolatable<Vertex>
 	{
-		float x, y, z;
-		float r, g, b;
+		glm::vec3 pos;
+		glm::vec3 normal;
 
 		Vertex()=default;
-		Vertex(float, float, float);
+		Vertex(const glm::vec3 &pos);
+		Vertex(const glm::vec3 &pos, const glm::vec3 &normal);
 
 		virtual Vertex interpolate(const Vertex &endValue, float t) const;
 	};
