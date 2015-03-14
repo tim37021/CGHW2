@@ -19,6 +19,8 @@ namespace SRenderer
 		glm::vec3 pos;
 		glm::vec3 normal;
 
+		glm::vec3 worldPos;
+
 		Vertex()=default;
 		Vertex(const glm::vec3 &pos);
 		Vertex(const glm::vec3 &pos, const glm::vec3 &normal);

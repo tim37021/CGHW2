@@ -53,7 +53,7 @@ namespace SRenderer
 			for(x=0; x<m_width; x++)
 			{
 				const int offset = y*m_width+x;
-				m_pixelBuffer[offset]=glm::vec3();
+				m_pixelBuffer[offset]=glm::vec3(1.0f, 1.0f, 1.0f);
 				m_depthBuffer[offset]=INF;
 			}
 		}

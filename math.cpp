@@ -20,8 +20,8 @@ namespace SRenderer{
 		Vertex result;
 
 		result.pos=pos*(1.0f-t)+endValue.pos*t;
-
 		result.normal=normal*(1.0f-t)+endValue.normal*t;
+		result.worldPos=worldPos*(1.0f-t)+endValue.worldPos*t;
 
 		return result;
 	}
