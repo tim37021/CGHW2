@@ -108,8 +108,8 @@ static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatabl
 
 static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b)
 {
-    const SRenderer::Vertex &vout=reinterpret_cast<const SRenderer::Vertex &>(in);
-    *r = vout.normal.x;
-    *g = vout.normal.y;
-    *b = vout.normal.z;
+    const SRenderer::Vertex &vin=reinterpret_cast<const SRenderer::Vertex &>(in);
+    *r = vin.normal.x;
+    *g = vin.normal.y;
+    *b = vin.normal.z;
 }
