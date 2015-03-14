@@ -68,7 +68,9 @@ namespace SRenderer
 
 	void SRenderer::drawTriangle(const Vertex &o, const Vertex a, const Vertex &b)
 	{
-		GLWrapper::drawTriangle(o.pos.x, o.pos.y, a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+		drawLine(o, a);
+		drawLine(o, b);
+		drawLine(a, b);
 	}
 
 	void SRenderer::drawFilledTriangle(const Vertex &o, const Vertex a, const Vertex &b)
