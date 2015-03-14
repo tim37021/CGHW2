@@ -13,7 +13,7 @@
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out);
-static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b);
+static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, glm::vec4 *out);
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
@@ -106,10 +106,10 @@ static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatabl
     vout->normal.z=in.normal.z;
 }
 
-static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b)
+static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, glm::vec4 *out)
 {
     const SRenderer::Vertex &vin=reinterpret_cast<const SRenderer::Vertex &>(in);
-    *r = vin.normal.x;
-    *g = vin.normal.y;
-    *b = vin.normal.z;
+    out->r = vin.normal.x;
+    out->g = vin.normal.y;
+    out->b = vin.normal.z;
 }

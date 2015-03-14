@@ -25,7 +25,7 @@ namespace SRenderer
 		*height=m_height;
 	}
 
-	void FrameBuffer::setPixel(const glm::vec3 &pos, const glm::vec3 &color)
+	void FrameBuffer::setPixel(const glm::vec3 &pos, const glm::vec4 &color)
 	{
 		// We must convert NDC to window coordinate first
 		// [-1, 1] -> [0, width] and [0, height]
@@ -40,7 +40,7 @@ namespace SRenderer
 
 		if(!m_enableDepthTest||pos.z<m_depthBuffer[offset])
 		{
-			m_pixelBuffer[offset]=color;
+			m_pixelBuffer[offset]=glm::vec3(color);
 			m_depthBuffer[offset]=pos.z;
 		}
 	}

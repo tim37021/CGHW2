@@ -56,12 +56,12 @@ namespace SRenderer
 		for(int i=0; i<=samples; i++)
 		{
 			const Vertex &v=a.interpolate(b, t);
-			float rf=1.0f, gf=1.0f, bf=1.0f;
+			glm::vec4 fragColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if(fs)
-				fs(v, &rf, &gf, &bf);
+				fs(v, &fragColor);
 
-			fbo->setPixel(v.pos, glm::vec3(rf, gf, bf));
+			fbo->setPixel(v.pos, fragColor);
 			t+=1.0f/samples;
 		}
 	}

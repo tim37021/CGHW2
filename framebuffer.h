@@ -2,7 +2,7 @@
 #define _FRAMEBUFFER_H_
 
 #include <glm/vec3.hpp>
-#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace SRenderer
 {
@@ -17,7 +17,7 @@ namespace SRenderer
 			{return 2.0f/(m_width>=m_height?m_width:m_height);}
 
 		//NDC
-		void setPixel(const glm::vec3 &pos, const glm::vec3 &color);
+		void setPixel(const glm::vec3 &pos, const glm::vec4 &color);
 
 		void clearBuffer();
 
