@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <cstdlib>
@@ -7,16 +8,19 @@
 #include "mesh.h"
 #include "math.h"
 #include "srenderer.h"
+#include "framebuffer.h"
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out);
 static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b);
 
+SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
 SRenderer::Mesh mesh;
+float angle=0.0f;
 
-int main(void)
+int main(int argc, char *argv[])
 {
     GLFWwindow* window;
 
@@ -25,12 +29,14 @@ int main(void)
         return -1;
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(320, 320, "CGHW2", NULL, NULL);
+    window = glfwCreateWindow(640, 640, "CGHW2", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         return EXIT_FAILURE;
     }
+
+    glewInit();
 
     // Prepare event callback functions
     glfwSetKeyCallback(window, keyCallback);
@@ -42,14 +48,17 @@ int main(void)
     std::ifstream fin("untitled.obj");
     SRenderer::loadObjMesh(fin, &mesh);
 
-    glEnable(GL_DEPTH_TEST);
+    fbo = new SRenderer::FrameBuffer(640, 640);
+    fbo->enableDepthTest(true);
 
     //prepare renderer
-    renderer = new SRenderer::SRenderer(320, 320, myVertexShader, myFragmentShader);
+    renderer = new SRenderer::SRenderer(fbo, myVertexShader, myFragmentShader);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
+        angle=glfwGetTime();
+
         // Render here
         render();
 
@@ -66,9 +75,10 @@ int main(void)
 
 static void render()
 {
-    GLWrapper::clearScreen();
+    fbo->clearBuffer();
     //HW2::drawCircle(0, 0, 0.25, 200);
     renderer->render(mesh);
+    fbo->upload();
 }
 
 static void keyCallback(
@@ -78,12 +88,22 @@ static void keyCallback(
         glfwSetWindowShouldClose(window, true);
 }
 
+#include <glm/gtx/transform.hpp>
+
+
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
 {
     SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
-    vout->pos.x=in.pos.x;
-    vout->pos.y=in.pos.y;
-    vout->pos.z=in.pos.z;
+
+    const glm::vec4 &result=glm::rotate(angle, glm::vec3(1.0f, 1.0f, 0.0f))*glm::vec4(in.pos, 1.0f);
+
+    vout->pos.x=result.x;
+    vout->pos.y=result.y;
+    vout->pos.z=result.z;
+
+    vout->normal.x=in.normal.x;
+    vout->normal.y=in.normal.y;
+    vout->normal.z=in.normal.z;
 }
 
 static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, float *r, float *g, float *b)

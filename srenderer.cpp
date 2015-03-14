@@ -7,10 +7,10 @@
 namespace SRenderer
 {
 
-	SRenderer::SRenderer(int w_, int h_, VertexShader vs_, FragmentShader fs_):
-		vs(vs_), fs(fs_)
+	SRenderer::SRenderer(FrameBuffer *fbo_, VertexShader vs_, FragmentShader fs_):
+		fbo(fbo_), vs(vs_), fs(fs_)
 	{
-		setCanvasSize(w_, h_);
+
 	}
 
 	void SRenderer::setVertexShader(VertexShader vs_)
@@ -20,13 +20,6 @@ namespace SRenderer
 	void SRenderer::setFragmentShader(FragmentShader fs_)
 	{
 		fs=fs_;
-	}
-
-	void SRenderer::setCanvasSize(int w_, int h_)
-	{
-		width=w_;
-		height=h_;
-		pixelWidth=2.0f/(width>=height?width:height);
 	}
 
 	void SRenderer::render(const Mesh &mesh)
@@ -56,6 +49,8 @@ namespace SRenderer
 	{
 		float t=0.0f;
 
+		float pixelWidth=fbo->getPixelWidth();
+
 		int samples=1+(abs(b.pos.x-a.pos.x)>=abs(b.pos.y-a.pos.y)?abs(b.pos.x-a.pos.x)/pixelWidth:abs(b.pos.y-a.pos.y)/pixelWidth);
 
 		for(int i=0; i<=samples; i++)
@@ -66,8 +61,7 @@ namespace SRenderer
 			if(fs)
 				fs(v, &rf, &gf, &bf);
 
-			GLWrapper::setColor(rf, gf, bf);
-			GLWrapper::drawPoint(v.pos.x, v.pos.y, v.pos.z);
+			fbo->setPixel(v.pos, glm::vec3(rf, gf, bf));
 			t+=1.0f/samples;
 		}
 	}
@@ -79,10 +73,11 @@ namespace SRenderer
 
 	void SRenderer::drawFilledTriangle(const Vertex &o, const Vertex a, const Vertex &b)
 	{
+		float pixelWidth=fbo->getPixelWidth();
+
 		// Step 1 - find max |y'-y|
 		float lo=abs(a.pos.y-b.pos.y), la=abs(o.pos.y-b.pos.y), lb=abs(o.pos.y-a.pos.y);
 		const Vertex *bottom=&o, *top=&a, *mid=&b;
-
 
 		if(lo>=la&&lo>=lb)
 		{
@@ -108,12 +103,11 @@ namespace SRenderer
 		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
 		int samples=1+(abs(mid->pos.x-bottom->pos.x)>=abs(mid->pos.y-bottom->pos.y)
 			?abs(mid->pos.x-bottom->pos.x)/pixelWidth:abs(mid->pos.y-bottom->pos.y)/pixelWidth);
-		
-		float y=bottom->pos.y;
 
 		// Step 3 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
+			const float y = bottom->pos.y+i*(mid->pos.y-bottom->pos.y)/samples;
 
 			if(abs(mid->pos.y-bottom->pos.y)<=1e-6) 
 				continue;
@@ -123,16 +117,17 @@ namespace SRenderer
 
 			drawLine(right, left);
 			
-			y+=(mid->pos.y-bottom->pos.y)/samples;
+			
 		}
 
 		samples=1+(abs(top->pos.x-mid->pos.x)>=abs(top->pos.y-mid->pos.y)
 			?abs(top->pos.x-mid->pos.x)/pixelWidth:abs(top->pos.y-mid->pos.y)/pixelWidth);
-		y=top->pos.y;
 
 		// Step 4 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
+			const float y=top->pos.y + i*(mid->pos.y-top->pos.y)/samples;
+
 			if(abs(mid->pos.y-top->pos.y)<=1e-6) 
 				continue;
 
@@ -140,8 +135,6 @@ namespace SRenderer
 			const Vertex &right=top->interpolate(*mid, (y-top->pos.y)/(mid->pos.y-top->pos.y));
 
 			drawLine(right, left);
-
-			y+=(mid->pos.y-top->pos.y)/samples;
 		}
 	}
 }
