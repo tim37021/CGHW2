@@ -33,7 +33,7 @@ namespace SRenderer
 		int fragPixel_y = (pos.y+1)*m_height/2.0f;
 
 		// cull pixels that are outside the window
-		if(fragPixel_x >= m_width || fragPixel_y >= m_height)
+		if(fragPixel_x < 0 || fragPixel_x >= m_width || fragPixel_y < 0 || fragPixel_y >= m_height)
 			return;
 
 		int offset = fragPixel_y*m_width+fragPixel_x;
@@ -53,7 +53,7 @@ namespace SRenderer
 			for(x=0; x<m_width; x++)
 			{
 				const int offset = y*m_width+x;
-				m_pixelBuffer[offset]=glm::vec3(1.0f, 1.0f, 1.0f);
+				m_pixelBuffer[offset]=glm::vec3();
 				m_depthBuffer[offset]=INF;
 			}
 		}

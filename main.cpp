@@ -9,6 +9,9 @@
 #include "math.h"
 #include "srenderer.h"
 #include "framebuffer.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
@@ -17,6 +20,7 @@ static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> 
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
+glm::mat4 proj, view;
 SRenderer::Mesh mesh;
 float angle=0.0f;
 
@@ -53,6 +57,11 @@ int main(int argc, char *argv[])
 
     //prepare renderer
     renderer = new SRenderer::SRenderer(fbo, myVertexShader, myFragmentShader);
+
+    proj = glm::perspective(90.0f, 1.0f, 0.01f, 10.0f);
+    view = glm::lookAt(glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    printf("%s", glm::to_string(proj).c_str());
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
@@ -95,21 +104,27 @@ static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatabl
 {
     SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
 
-    const glm::vec4 &result=glm::rotate(angle, glm::vec3(1.0f, 1.0f, 0.0f))*glm::vec4(in.pos, 1.0f);
+    const glm::mat4 &model=glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    vout->pos.x=result.x;
-    vout->pos.y=result.y;
-    vout->pos.z=result.z;
+    const glm::vec4 &result=proj*view*model*glm::vec4(in.pos, 1.0f);
 
-    vout->normal.x=in.normal.x;
-    vout->normal.y=in.normal.y;
-    vout->normal.z=in.normal.z;
+    vout->pos=glm::vec3(result);
+    vout->worldPos=in.pos;
+    vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
 }
+
+glm::vec3 light_pos(10.0f, 10.0f, 10.0f);
 
 static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, glm::vec4 *out)
 {
     const SRenderer::Vertex &vin=reinterpret_cast<const SRenderer::Vertex &>(in);
-    out->r = vin.normal.x;
-    out->g = vin.normal.y;
-    out->b = vin.normal.z;
+
+    const glm::vec3 &dir=glm::normalize(light_pos-vin.worldPos);
+    float diffuse=glm::dot(vin.normal, dir);
+    diffuse=glm::max(diffuse, 0.0f);
+
+    float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(5.0f, 0.0f, 0.0f)-vin.worldPos));
+    specular = glm::max(specular, 0.0f);
+
+    *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
 }
