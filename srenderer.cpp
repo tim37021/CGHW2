@@ -30,8 +30,7 @@ namespace SRenderer
 			int a=mesh.indices[i+1]-1;
 			int b=mesh.indices[i+2]-1;
 
-			Vertex vo=mesh.vertices[o], va=mesh.vertices[a], vb=mesh.vertices[b];
-			
+			VertexShaderOutput vo, va, vb;
 			if(vs)
 			{
 				// Pass each to vertex shader if vs is not null
@@ -45,96 +44,101 @@ namespace SRenderer
 		}
 	}
 
-	void SRenderer::drawLine(const Vertex a, const Vertex &b)
+	void SRenderer::drawLine(const VertexShaderOutput &a, const VertexShaderOutput &b)
 	{
 		float t=0.0f;
 
 		float pixelWidth=fbo->getPixelWidth();
 
-		int samples=1+(abs(b.pos.x-a.pos.x)>=abs(b.pos.y-a.pos.y)?abs(b.pos.x-a.pos.x)/pixelWidth:abs(b.pos.y-a.pos.y)/pixelWidth);
+		int samples=1+(abs(b.fragCoord.x-a.fragCoord.x)>=abs(b.fragCoord.y-a.fragCoord.y)?
+			abs(b.fragCoord.x-a.fragCoord.x)/pixelWidth:abs(b.fragCoord.y-a.fragCoord.y)/pixelWidth);
 
 		for(int i=0; i<=samples; i++)
 		{
-			const Vertex &v=a.interpolate(b, t);
+			const VertexShaderOutput &v=a.interpolate(b, t);
 			glm::vec4 fragColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if(fs)
 				fs(v, &fragColor);
 
-			fbo->setPixel(v.pos, fragColor);
+			fbo->setPixel(glm::vec3(v.fragCoord), fragColor);
 			t+=1.0f/samples;
 		}
 	}
 
-	void SRenderer::drawTriangle(const Vertex &o, const Vertex a, const Vertex &b)
+	void SRenderer::drawTriangle(const VertexShaderOutput &o, const VertexShaderOutput &a, const VertexShaderOutput &b)
 	{
 		drawLine(o, a);
 		drawLine(o, b);
 		drawLine(a, b);
 	}
 
-	void SRenderer::drawFilledTriangle(const Vertex &o, const Vertex a, const Vertex &b)
+	void SRenderer::drawFilledTriangle(const VertexShaderOutput &o, const VertexShaderOutput &a, const VertexShaderOutput &b)
 	{
 		float pixelWidth=fbo->getPixelWidth();
 
 		// Step 1 - find max |y'-y|
-		float lo=abs(a.pos.y-b.pos.y), la=abs(o.pos.y-b.pos.y), lb=abs(o.pos.y-a.pos.y);
-		const Vertex *bottom=&o, *top=&a, *mid=&b;
+		float lo=abs(a.fragCoord.y-b.fragCoord.y), la=abs(o.fragCoord.y-b.fragCoord.y), lb=abs(o.fragCoord.y-a.fragCoord.y);
+		const VertexShaderOutput *bottom=&o, *top=&a, *mid=&b;
 
 		if(lo>=la&&lo>=lb)
 		{
-			bottom=(a.pos.y<b.pos.y)? &a: &b;
-			top=(a.pos.y>b.pos.y)? &a: &b;
+			bottom=(a.fragCoord.y<b.fragCoord.y)? &a: &b;
+			top=(a.fragCoord.y>b.fragCoord.y)? &a: &b;
 			mid=&o;
 		}
 
 		if(la>=lo&&la>=lb)
 		{
-			bottom=(o.pos.y<b.pos.y)? &o: &b;
-			top=(o.pos.y>b.pos.y)? &o: &b;
+			bottom=(o.fragCoord.y<b.fragCoord.y)? &o: &b;
+			top=(o.fragCoord.y>b.fragCoord.y)? &o: &b;
 			mid=&a;
 		}
 
 		if(lb>=lo&&lb>=la)
 		{
-			bottom=(o.pos.y<a.pos.y)? &o: &a;
-			top=(o.pos.y>a.pos.y)? &o: &a;
+			bottom=(o.fragCoord.y<a.fragCoord.y)? &o: &a;
+			top=(o.fragCoord.y>a.fragCoord.y)? &o: &a;
 			mid=&b;
 		}
 
 		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
-		int samples=1+(abs(mid->pos.x-bottom->pos.x)>=abs(mid->pos.y-bottom->pos.y)
-			?abs(mid->pos.x-bottom->pos.x)/pixelWidth:abs(mid->pos.y-bottom->pos.y)/pixelWidth);
+		int samples=1+(abs(mid->fragCoord.x-bottom->fragCoord.x)>=abs(mid->fragCoord.y-bottom->fragCoord.y)
+			?abs(mid->fragCoord.x-bottom->fragCoord.x)/pixelWidth:abs(mid->fragCoord.y-bottom->fragCoord.y)/pixelWidth);
 
 		// Step 3 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
-			const float y = bottom->pos.y+i*(mid->pos.y-bottom->pos.y)/samples;
+			const float y = bottom->fragCoord.y+i*(mid->fragCoord.y-bottom->fragCoord.y)/samples;
 
-			if(abs(mid->pos.y-bottom->pos.y)<=1e-6) 
+			if(abs(mid->fragCoord.y-bottom->fragCoord.y)<=1e-6) 
 				continue;
 
-			const Vertex &left=bottom->interpolate(*top, (y-bottom->pos.y)/(top->pos.y-bottom->pos.y));
-			const Vertex &right=bottom->interpolate(*mid, (y-bottom->pos.y)/(mid->pos.y-bottom->pos.y));
+			const VertexShaderOutput &left=bottom->interpolate(*top, 
+				(y-bottom->fragCoord.y)/(top->fragCoord.y-bottom->fragCoord.y));
+			const VertexShaderOutput &right=bottom->interpolate(*mid,
+				(y-bottom->fragCoord.y)/(mid->fragCoord.y-bottom->fragCoord.y));
 
 			drawLine(right, left);
 			
 			
 		}
 
-		samples=1+(abs(top->pos.x-mid->pos.x)>=abs(top->pos.y-mid->pos.y)
-			?abs(top->pos.x-mid->pos.x)/pixelWidth:abs(top->pos.y-mid->pos.y)/pixelWidth);
+		samples=1+(abs(top->fragCoord.x-mid->fragCoord.x)>=abs(top->fragCoord.y-mid->fragCoord.y)
+			?abs(top->fragCoord.x-mid->fragCoord.x)/pixelWidth:abs(top->fragCoord.y-mid->fragCoord.y)/pixelWidth);
 
 		// Step 4 - Fill the triangle
 		for(int i=0; i<=samples; i++)
 		{
-			const float y=top->pos.y + i*(mid->pos.y-top->pos.y)/samples;
+			const float y=top->fragCoord.y + i*(mid->fragCoord.y-top->fragCoord.y)/samples;
 
-			if(abs(mid->pos.y-top->pos.y)<=1e-6) 
+			if(abs(mid->fragCoord.y-top->fragCoord.y)<=1e-6) 
 				continue;
 
-			const Vertex &left=top->interpolate(*bottom, (y-top->pos.y)/(bottom->pos.y-top->pos.y));
-			const Vertex &right=top->interpolate(*mid, (y-top->pos.y)/(mid->pos.y-top->pos.y));
+			const VertexShaderOutput &left=top->interpolate(*bottom, 
+				(y-top->fragCoord.y)/(bottom->fragCoord.y-top->fragCoord.y));
+			const VertexShaderOutput &right=top->interpolate(*mid, 
+				(y-top->fragCoord.y)/(mid->fragCoord.y-top->fragCoord.y));
 
 			drawLine(right, left);
 		}

@@ -16,12 +16,12 @@
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
-static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out);
-static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, glm::vec4 *out);
+static void myVertexShader(const SRenderer::Vertex &in, SRenderer::VertexShaderOutput *out);
+static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out);
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
-glm::mat4 proj, view, model;
+glm::mat4 proj, view, model, mvp;
 SRenderer::Mesh mesh;
 
 int main(int argc, char *argv[])
@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
             fps=0;
         }
         model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        mvp = proj*view*model;
 
         // Render here
         render();
@@ -95,7 +96,7 @@ static void render()
     fbo->clearBuffer();
     //HW2::drawCircle(0, 0, 0.25, 200);
     renderer->render(mesh);
-    //fbo->upload();
+    fbo->upload();
 }
 
 static void keyCallback(
@@ -106,23 +107,24 @@ static void keyCallback(
 }
 
 
-static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
+static void myVertexShader(const SRenderer::Vertex &in, SRenderer::VertexShaderOutput *out)
 {
-    SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
+    SRenderer::VertexShaderOutput *vout=reinterpret_cast<SRenderer::VertexShaderOutput *>(out);
 
-    const glm::vec4 &result=proj*view*model*glm::vec4(in.pos, 1.0f);
+    const glm::vec4 &result=mvp*glm::vec4(in.pos, 1.0f);
 
-    vout->pos=glm::vec3(result);
-    vout->worldPos=in.pos;
-    vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
+    vout->fragCoord=result;
+    //vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
+    //vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
 }
 
 glm::vec3 light_pos(10.0f, 10.0f, 10.0f);
 
-static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> &in, glm::vec4 *out)
+static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out)
 {
-    const SRenderer::Vertex &vin=reinterpret_cast<const SRenderer::Vertex &>(in);
-
+    const SRenderer::VertexShaderOutput &vin=reinterpret_cast<const SRenderer::VertexShaderOutput &>(in);
+    *out = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+/*
     const glm::vec3 &dir=glm::normalize(light_pos-vin.worldPos);
     float diffuse=glm::dot(vin.normal, dir);
     diffuse=glm::max(diffuse, 0.0f);
@@ -131,4 +133,5 @@ static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> 
     specular = glm::max(specular, 0.0f);
 
     *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
+*/
 }

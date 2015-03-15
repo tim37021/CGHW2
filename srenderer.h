@@ -21,9 +21,17 @@ namespace SRenderer
 		FragmentShader fs;
 		FrameBuffer *fbo;
 		
-		void drawLine(const Vertex a, const Vertex &b);
-		void drawTriangle(const Vertex &o, const Vertex a, const Vertex &b);
-		void drawFilledTriangle(const Vertex &o, const Vertex a, const Vertex &b);
+		void drawLine(const VertexShaderOutput &a, const VertexShaderOutput &b);
+		void drawTriangle(
+			const VertexShaderOutput &o, 
+			const VertexShaderOutput &a, 
+			const VertexShaderOutput &b
+		);
+		void drawFilledTriangle(
+			const VertexShaderOutput &o,
+			const VertexShaderOutput &a, 
+			const VertexShaderOutput &b
+		);
 	};
 }
 

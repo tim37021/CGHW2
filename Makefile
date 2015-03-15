@@ -9,7 +9,7 @@ OUT_EXE = HW2.exe
 
 all: $(OUT_EXE)
 
-$(OUT_EXE): main.o hw2.o glwrapper.o math.o mesh.o srenderer.o framebuffer.o glew.o
+$(OUT_EXE): main.o hw2.o glwrapper.o math.o mesh.o srenderer.o framebuffer.o glew.o shader.o
 	$(CXX) $^ $(LIBS) -o $@
 
 %.o: %.cpp

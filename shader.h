@@ -6,7 +6,15 @@
 
 namespace SRenderer
 {
-	typedef void (*VertexShader)(const Vertex &, Interpolatable<Vertex> *);
-	typedef void (*FragmentShader)(const Interpolatable<Vertex> &, glm::vec4 *);
+	struct VertexShaderOutput: Interpolatable<VertexShaderOutput>
+	{
+		glm::vec4 fragCoord;
+		virtual VertexShaderOutput interpolate(
+			const VertexShaderOutput &endValue,
+			float t) const;
+	};
+
+	typedef void (*VertexShader)(const Vertex &, VertexShaderOutput *);
+	typedef void (*FragmentShader)(const VertexShaderOutput &, glm::vec4 *);
 }
 #endif

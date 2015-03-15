@@ -1,4 +1,5 @@
 #include "math.h"
+#include <glm/glm.hpp>
 
 namespace SRenderer{
 
@@ -19,9 +20,9 @@ namespace SRenderer{
 	{
 		Vertex result;
 
-		result.pos=pos*(1.0f-t)+endValue.pos*t;
-		result.normal=normal*(1.0f-t)+endValue.normal*t;
-		result.worldPos=worldPos*(1.0f-t)+endValue.worldPos*t;
+		result.pos=glm::mix(pos, endValue.pos, t);
+		result.normal=glm::mix(normal, endValue.normal, t);
+		result.worldPos=glm::mix(worldPos, endValue.worldPos, t);
 
 		return result;
 	}
