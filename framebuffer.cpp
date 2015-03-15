@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "framebuffer.h"
 
@@ -8,15 +9,27 @@ namespace SRenderer
 	FrameBuffer::FrameBuffer(int width, int height):
 		m_width(width), m_height(height)
 	{
-		m_pixelBuffer = new glm::vec3[width*height];
+		m_pixelBuffer = new unsigned char[4*width*height];
 		m_depthBuffer = new float[width*height];
 		clearBuffer();
+
+		glGenTextures(1, &m_texture);
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid*)m_pixelBuffer);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	FrameBuffer::~FrameBuffer()
 	{
 		delete [] m_pixelBuffer;
 		delete [] m_depthBuffer;
+
+		glDeleteTextures(1, &m_texture);
 	}
 
 	void FrameBuffer::getCanvasSize(int *width, int *height) const
@@ -40,7 +53,9 @@ namespace SRenderer
 
 		if(!m_enableDepthTest||pos.z<m_depthBuffer[offset])
 		{
-			m_pixelBuffer[offset]=glm::vec3(color);
+			m_pixelBuffer[4*offset]=static_cast<int>(color.b*255.0f);
+			m_pixelBuffer[4*offset+1]=static_cast<int>(color.g*255.0f);
+			m_pixelBuffer[4*offset+2]=static_cast<int>(color.r*255.0f);
 			m_depthBuffer[offset]=pos.z;
 		}
 	}
@@ -53,7 +68,10 @@ namespace SRenderer
 			for(x=0; x<m_width; x++)
 			{
 				const int offset = y*m_width+x;
-				m_pixelBuffer[offset]=glm::vec3();
+				m_pixelBuffer[4*offset]=0;
+				m_pixelBuffer[4*offset+1]=0;
+				m_pixelBuffer[4*offset+2]=0;
+				m_pixelBuffer[4*offset+3]=0;
 				m_depthBuffer[offset]=INF;
 			}
 		}
@@ -66,17 +84,25 @@ namespace SRenderer
 
 	void FrameBuffer::upload() const
 	{
-		int x, y;
-		glBegin(GL_POINTS);
-		for(y=0; y<m_height; y++)
-		{
-			for(x=0; x<m_width; x++)
-			{
-				const int offset = y*m_width+x;
-				glColor3f(m_pixelBuffer[offset].x, m_pixelBuffer[offset].y, m_pixelBuffer[offset].z);
-				glVertex2f(x*2.0f/m_width-1.0f, y*2.0f/m_height-1.0f);
-			}
-		}
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height,
+        	GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid*)m_pixelBuffer);
+
+        glEnable(GL_TEXTURE_2D);
+
+		// draw a point with texture
+		glBindTexture(GL_TEXTURE_2D, m_texture);
+		glColor4f(1, 1, 1, 1);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1);
+		glTexCoord2f(0.0f, 0.0f);   glVertex3f(-1.0f, -1.0f, 0.0f);
+		glTexCoord2f(1.0f, 0.0f);   glVertex3f( 1.0f, -1.0f, 0.0f);
+		glTexCoord2f(1.0f, 1.0f);   glVertex3f( 1.0f,  1.0f, 0.0f);
+		glTexCoord2f(0.0f, 1.0f);   glVertex3f(-1.0f,  1.0f, 0.0f);
 		glEnd();
+
+		// unbind texture
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 	}
 }

@@ -26,9 +26,11 @@ namespace SRenderer
 		void upload() const;
 	private:
 		int m_width, m_height;
+		unsigned int m_texture;
 
 		//row major
-		glm::vec3 *m_pixelBuffer;
+		//BGRA
+		unsigned char *m_pixelBuffer;
 		float *m_depthBuffer;
 
 		//Settings

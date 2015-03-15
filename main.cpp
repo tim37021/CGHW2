@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/transform.hpp>
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
@@ -20,9 +21,8 @@ static void myFragmentShader(const SRenderer::Interpolatable<SRenderer::Vertex> 
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
-glm::mat4 proj, view;
+glm::mat4 proj, view, model;
 SRenderer::Mesh mesh;
-float angle=0.0f;
 
 int main(int argc, char *argv[])
 {
@@ -61,15 +61,23 @@ int main(int argc, char *argv[])
     proj = glm::perspective(90.0f, 1.0f, 0.01f, 10.0f);
     view = glm::lookAt(glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    printf("%s", glm::to_string(proj).c_str());
+    double lastCheckTime = glfwGetTime();
+    int fps=0;
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
-        angle=glfwGetTime();
+        if(glfwGetTime()-lastCheckTime>=1.0)
+        {
+            glfwSetWindowTitle(window, std::to_string(fps).c_str());
+            lastCheckTime=glfwGetTime();
+            fps=0;
+        }
+        model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
 
         // Render here
         render();
+        fps++;
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
@@ -87,7 +95,7 @@ static void render()
     fbo->clearBuffer();
     //HW2::drawCircle(0, 0, 0.25, 200);
     renderer->render(mesh);
-    fbo->upload();
+    //fbo->upload();
 }
 
 static void keyCallback(
@@ -97,14 +105,10 @@ static void keyCallback(
         glfwSetWindowShouldClose(window, true);
 }
 
-#include <glm/gtx/transform.hpp>
-
 
 static void myVertexShader(const SRenderer::Vertex &in, SRenderer::Interpolatable<SRenderer::Vertex> *out)
 {
     SRenderer::Vertex *vout=reinterpret_cast<SRenderer::Vertex *>(out);
-
-    const glm::mat4 &model=glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
     const glm::vec4 &result=proj*view*model*glm::vec4(in.pos, 1.0f);
 
