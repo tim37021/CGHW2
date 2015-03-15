@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include "framebuffer.h"
 
 #define INF 999999.0f
@@ -53,9 +54,9 @@ namespace SRenderer
 
 		if(!m_enableDepthTest||pos.z<m_depthBuffer[offset])
 		{
-			m_pixelBuffer[4*offset]=static_cast<int>(color.b*255.0f);
-			m_pixelBuffer[4*offset+1]=static_cast<int>(color.g*255.0f);
-			m_pixelBuffer[4*offset+2]=static_cast<int>(color.r*255.0f);
+			m_pixelBuffer[4*offset]=static_cast<int>(glm::clamp(color.b, 0.0f, 1.0f)*255.0f);
+			m_pixelBuffer[4*offset+1]=static_cast<int>(glm::clamp(color.g, 0.0f, 1.0f)*255.0f);
+			m_pixelBuffer[4*offset+2]=static_cast<int>(glm::clamp(color.r, 0.0f, 1.0f)*255.0f);
 			m_depthBuffer[offset]=pos.z;
 		}
 	}
