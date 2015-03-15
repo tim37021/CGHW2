@@ -1,8 +1,8 @@
 CXX = g++
 CC = gcc
 
-CXXFLAGS = -std=c++0x -DGLEW_STATIC -g -I./inc
-CCFLAGS = -std=c99 -DGLEW_STATIC -g -I./inc
+CXXFLAGS = -std=c++0x -DGLEW_STATIC -O2 -I./inc
+CCFLAGS = -std=c99 -DGLEW_STATIC -O2 -I./inc
 LIBS = -L./lib -lglfw3 -lopengl32 -lgdi32
 
 OUT_EXE = HW2.exe
