@@ -1,15 +1,15 @@
 CXX = g++
 CC = gcc
 
-CXXFLAGS = -std=c++0x -DGLEW_STATIC -O2 -I./inc
+CXXFLAGS = -std=c++0x -DGLEW_STATIC -O2 -I./inc -fopenmp
 CCFLAGS = -std=c99 -DGLEW_STATIC -O2 -I./inc
-LIBS = -L./lib -lglfw3 -lopengl32 -lgdi32
+LIBS = -L./lib -lglfw3 -lopengl32 -lgdi32 -fopenmp
 
 OUT_EXE = HW2.exe
 
 all: $(OUT_EXE)
 
-$(OUT_EXE): main.o hw2.o glwrapper.o math.o mesh.o srenderer.o framebuffer.o glew.o shader.o
+$(OUT_EXE): main.o hw2.o glwrapper.o mesh.o srenderer.o framebuffer.o glew.o shader.o vertex.o
 	$(CXX) $^ $(LIBS) -o $@
 
 %.o: %.cpp
