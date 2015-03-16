@@ -75,9 +75,7 @@ namespace SRenderer
 
 		float pixelWidth=fbo->getPixelWidth();
 
-		int samples=1+(abs(b.fragCoord.x-a.fragCoord.x)>=abs(b.fragCoord.y-a.fragCoord.y)?
-			abs(b.fragCoord.x/b.fragCoord.w-a.fragCoord.x/a.fragCoord.w)/pixelWidth:
-			abs(b.fragCoord.y/b.fragCoord.w-a.fragCoord.y/a.fragCoord.w)/pixelWidth);
+		int samples=1+640;
 
 		count+=samples;
 
@@ -96,6 +94,49 @@ namespace SRenderer
 		}
 	}
 
+	void SRenderer::drawSpan(const VertexShaderOutput &a, const VertexShaderOutput &b, int y)
+	{
+		// Pixel-based filling
+		glm::ivec2 aUV(0, y);
+		glm::ivec2 bUV(0, y);
+
+		aUV.x=(a.fragCoord.x/a.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		bUV.x=(b.fragCoord.x/b.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+
+		int start, end;
+		const VertexShaderOutput *left, *right;
+		if(aUV.x<bUV.x)
+		{
+			start=aUV.x;
+			left=&a;
+			right=&b;
+			end=bUV.x;
+		}else
+		{
+			start=bUV.x;
+			left=&b;
+			right=&a;
+			end=aUV.x;
+		}
+
+		int x=start;
+
+		while(x>=start&&x<=end)
+		{
+			left->interpolate(*right, (float)(x-start)/abs(aUV.x-bUV.x), outputSlot3);
+			outputSlot3->fragCoord/=outputSlot3->fragCoord.w;
+
+			glm::vec4 fragColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+			if(fs)
+				fs(*outputSlot3, &fragColor);
+			fbo->setPixel(x, y, outputSlot3->fragCoord.z, fragColor);
+
+			count++;
+			x++;
+		}
+	}
+
 	void SRenderer::drawTriangle(const VertexShaderOutput &o, const VertexShaderOutput &a, const VertexShaderOutput &b)
 	{
 		drawLine(o, a);
@@ -108,30 +149,71 @@ namespace SRenderer
 		float pixelWidth=fbo->getPixelWidth();
 
 		// Step 1 - find max |y'-y|
-		float lo=abs(a.fragCoord.y-b.fragCoord.y), la=abs(o.fragCoord.y-b.fragCoord.y), lb=abs(o.fragCoord.y-a.fragCoord.y);
+		float lo=abs(a.fragCoord.y/a.fragCoord.w-b.fragCoord.y/b.fragCoord.w), 
+			la=abs(o.fragCoord.y/o.fragCoord.w-b.fragCoord.y/b.fragCoord.w), 
+			lb=abs(o.fragCoord.y/o.fragCoord.w-a.fragCoord.y/a.fragCoord.w);
 		const VertexShaderOutput *bottom=&o, *top=&a, *mid=&b;
 
 		if(lo>=la&&lo>=lb)
 		{
-			bottom=(a.fragCoord.y<b.fragCoord.y)? &a: &b;
-			top=(a.fragCoord.y>b.fragCoord.y)? &a: &b;
+			bottom=(a.fragCoord.y/a.fragCoord.w<b.fragCoord.y/b.fragCoord.w)? &a: &b;
+			top=(a.fragCoord.y/a.fragCoord.w>b.fragCoord.y/b.fragCoord.w)? &a: &b;
 			mid=&o;
 		}
 
 		if(la>=lo&&la>=lb)
 		{
-			bottom=(o.fragCoord.y<b.fragCoord.y)? &o: &b;
-			top=(o.fragCoord.y>b.fragCoord.y)? &o: &b;
+			bottom=(o.fragCoord.y/o.fragCoord.w<b.fragCoord.y/b.fragCoord.w)? &o: &b;
+			top=(o.fragCoord.y/o.fragCoord.w>b.fragCoord.y/b.fragCoord.w)? &o: &b;
 			mid=&a;
 		}
 
 		if(lb>=lo&&lb>=la)
 		{
-			bottom=(o.fragCoord.y<a.fragCoord.y)? &o: &a;
-			top=(o.fragCoord.y>a.fragCoord.y)? &o: &a;
+			bottom=(o.fragCoord.y/o.fragCoord.w<a.fragCoord.y/a.fragCoord.w)? &o: &a;
+			top=(o.fragCoord.y/o.fragCoord.w>a.fragCoord.y/a.fragCoord.w)? &o: &a;
 			mid=&b;
 		}
 
+		glm::ivec2 bottomUV;
+		glm::ivec2 midUV;
+		glm::ivec2 topUV;
+
+		// Use pixel-based algorithm 
+		bottomUV.x=(bottom->fragCoord.x/bottom->fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		bottomUV.y=(bottom->fragCoord.y/bottom->fragCoord.w+1.0f)*fbo->getHeight()/2.0f;
+
+		midUV.x=(mid->fragCoord.x/mid->fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		midUV.y=(mid->fragCoord.y/mid->fragCoord.w+1.0f)*fbo->getHeight()/2.0f;
+
+		topUV.x=(top->fragCoord.x/top->fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		topUV.y=(top->fragCoord.y/top->fragCoord.w+1.0f)*fbo->getHeight()/2.0f;
+
+		int y = bottomUV.y;
+		while(bottomUV.y<midUV.y&&y<=midUV.y)
+		{
+			bottom->interpolate(*top, (float)(y-bottomUV.y)/(topUV.y-bottomUV.y), outputSlot1);
+			bottom->interpolate(*mid, (float)(y-bottomUV.y)/(midUV.y-bottomUV.y), outputSlot2);
+
+			drawSpan(*outputSlot1, *outputSlot2, y);
+			y++;
+		}
+
+		//bottom->interpolate(*top, (y-bottomUV.y)/(topUV.y-bottomUV.y), outputSlot1);
+		//drawLine(*outputSlot1, *mid);
+
+		y = topUV.y;
+		while(topUV.y>midUV.y&&y>=midUV.y)
+		{
+			top->interpolate(*bottom, (float)(y-topUV.y)/(bottomUV.y-topUV.y), outputSlot1);
+			top->interpolate(*mid, (float)(y-topUV.y)/(midUV.y-topUV.y), outputSlot2);
+
+			drawSpan(*outputSlot1, *outputSlot2, y);
+			y--;
+		}
+
+
+		/*
 		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
 		int samples=1+abs(mid->fragCoord.y/mid->fragCoord.w-bottom->fragCoord.y/bottom->fragCoord.w)/pixelWidth;
 		// Step 3 - Fill the triangle
@@ -163,6 +245,6 @@ namespace SRenderer
 			top->interpolate(*mid, (y-top->fragCoord.y)/(mid->fragCoord.y-top->fragCoord.y), outputSlot2);
 
 			drawLine(*outputSlot1, *outputSlot2);
-		}
+		}*/
 	}
 }
