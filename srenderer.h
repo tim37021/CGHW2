@@ -20,6 +20,7 @@ namespace SRenderer
 		VertexShader vs;
 		FragmentShader fs;
 		FrameBuffer *fbo;
+		VertexShaderOutput *outputSlot1, *outputSlot2, *outputSlot3;
 		
 		void drawLine(const VertexShaderOutput &a, const VertexShaderOutput &b);
 		void drawTriangle(

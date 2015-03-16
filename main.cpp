@@ -3,26 +3,26 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
-#include "hw2.h"
-#include "glwrapper.h"
-#include "mesh.h"
-#include "math.h"
-#include "srenderer.h"
-#include "framebuffer.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
+#include "framebuffer.h"
+#include "srenderer.h"
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
-static void myVertexShader(const SRenderer::Vertex &in, SRenderer::VertexShaderOutput *out);
+static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in);
 static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out);
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
 glm::mat4 proj, view, model, mvp;
 SRenderer::Mesh mesh;
+
+int count=0;
+
+float x=5.0f;
 
 int main(int argc, char *argv[])
 {
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     glfwMakeContextCurrent(window);
 
     // Load necessary files
-    std::ifstream fin("untitled.obj");
+    std::ifstream fin(argv[1]);
     SRenderer::loadObjMesh(fin, &mesh);
 
     fbo = new SRenderer::FrameBuffer(640, 640);
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     //prepare renderer
     renderer = new SRenderer::SRenderer(fbo, myVertexShader, myFragmentShader);
 
-    proj = glm::perspective(90.0f, 1.0f, 0.01f, 10.0f);
-    view = glm::lookAt(glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
+    proj = glm::perspective(45.0f, 1.0f, 0.01f, 10.0f);
+    view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
 
     double lastCheckTime = glfwGetTime();
     int fps=0;
@@ -73,11 +73,19 @@ int main(int argc, char *argv[])
             lastCheckTime=glfwGetTime();
             fps=0;
         }
-        model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        if(glfwGetKey(window, GLFW_KEY_UP)==GLFW_PRESS)
+            x-=0.1;
+        if(glfwGetKey(window, GLFW_KEY_DOWN)==GLFW_PRESS)
+            x+=0.1;
+
+        model = glm::rotate(x, glm::vec3(0.0f, 1.0f, 0.0f));
+        //view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
         mvp = proj*view*model;
 
+        count=0;
         // Render here
         render();
+        fprintf(stderr, "%d\n", count);
         fps++;
 
         // Swap front and back buffers
@@ -106,25 +114,49 @@ static void keyCallback(
         glfwSetWindowShouldClose(window, true);
 }
 
-
-static void myVertexShader(const SRenderer::Vertex &in, SRenderer::VertexShaderOutput *out)
+struct myVertexShaderOutput: public SRenderer::VertexShaderOutput
 {
-    SRenderer::VertexShaderOutput *vout=reinterpret_cast<SRenderer::VertexShaderOutput *>(out);
+    glm::vec3 worldPos;
+    glm::vec3 normal;
+
+    virtual void interpolate(
+        const CBase &endValue,
+        float t,
+        CBase *out) const
+    {
+        myVertexShaderOutput *result=dynamic_cast<myVertexShaderOutput *>(out);
+        const myVertexShaderOutput &endValue2=dynamic_cast<const myVertexShaderOutput &>(endValue);
+        result->fragCoord=glm::mix(fragCoord, endValue2.fragCoord, t);
+        result->worldPos=glm::mix(worldPos, endValue2.worldPos, t);
+        result->normal=glm::mix(normal, endValue2.normal, t);
+    }
+
+    virtual CBase *clone() const
+    {
+        myVertexShaderOutput *result = new myVertexShaderOutput();
+        *result = *this;
+        return result;
+    }
+};
+
+static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in)
+{
+    myVertexShaderOutput *vout = new myVertexShaderOutput();
 
     const glm::vec4 &result=mvp*glm::vec4(in.pos, 1.0f);
 
     vout->fragCoord=result;
-    //vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
-    //vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
+    vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
+    vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
+    return vout;
 }
 
 glm::vec3 light_pos(10.0f, 10.0f, 10.0f);
 
 static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out)
 {
-    const SRenderer::VertexShaderOutput &vin=reinterpret_cast<const SRenderer::VertexShaderOutput &>(in);
-    *out = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-/*
+    const myVertexShaderOutput &vin=static_cast<const myVertexShaderOutput &>(in);
+
     const glm::vec3 &dir=glm::normalize(light_pos-vin.worldPos);
     float diffuse=glm::dot(vin.normal, dir);
     diffuse=glm::max(diffuse, 0.0f);
@@ -133,5 +165,4 @@ static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 
     specular = glm::max(specular, 0.0f);
 
     *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
-*/
 }

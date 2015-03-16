@@ -1,4 +1,4 @@
-#include "math.h"
+#include "vertex.h"
 #include <glm/glm.hpp>
 
 namespace SRenderer{
@@ -13,18 +13,6 @@ namespace SRenderer{
 		pos(pos_), normal(normal_)
 	{
 
-	}
-
-
-	Vertex Vertex::interpolate(const Vertex &endValue, float t) const
-	{
-		Vertex result;
-
-		result.pos=glm::mix(pos, endValue.pos, t);
-		result.normal=glm::mix(normal, endValue.normal, t);
-		result.worldPos=glm::mix(worldPos, endValue.worldPos, t);
-
-		return result;
 	}
 
 }

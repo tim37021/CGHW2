@@ -2,19 +2,23 @@
 #define _SHADER_H_
 
 #include "math.h"
+#include "vertex.h"
 #include <glm/vec4.hpp>
 
 namespace SRenderer
 {
-	struct VertexShaderOutput: Interpolatable<VertexShaderOutput>
+	struct VertexShaderOutput: public CBase, public Interpolatable
 	{
+		//no need for virtual destructor..
 		glm::vec4 fragCoord;
-		virtual VertexShaderOutput interpolate(
-			const VertexShaderOutput &endValue,
-			float t) const;
+		virtual void interpolate(
+			const CBase &endValue,
+			float t,
+			CBase *) const;
+		virtual CBase *clone() const;
 	};
 
-	typedef void (*VertexShader)(const Vertex &, VertexShaderOutput *);
+	typedef VertexShaderOutput *(*VertexShader)(const Vertex &);
 	typedef void (*FragmentShader)(const VertexShaderOutput &, glm::vec4 *);
 }
 #endif

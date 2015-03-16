@@ -1,14 +1,18 @@
-#include "math.h"
+#include "vertex.h"
+#include <glm/glm.hpp>
 
-using namespace SRenderer;
+namespace SRenderer{
 
-Vertex Vertex::Interpolate(Vertex endValue, float t)
-{
-	Vertex result;
+	Vertex::Vertex(const glm::vec3 &pos_):
+		pos(pos_)
+	{
 
-	result.x=x*(1.0f-t)+endValue.x*t;
-	result.y=y*(1.0f-t)+endValue.y*t;
-	result.z=z*(1.0f-t)+endValue.z*t;
+	}
 
-	return result;
+	Vertex::Vertex(const glm::vec3 &pos_, const glm::vec3 &normal_):
+		pos(pos_), normal(normal_)
+	{
+
+	}
+
 }
