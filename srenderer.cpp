@@ -1,6 +1,5 @@
 #include <GLFW/glfw3.h>
 #include "srenderer.h"
-#include "glwrapper.h"
 #include <glm/glm.hpp>
 
 #define abs(a) (a>=0?(a):-(a))
@@ -71,27 +70,25 @@ namespace SRenderer
 
 	void SRenderer::drawLine(const VertexShaderOutput &a, const VertexShaderOutput &b)
 	{
-		float t=0.0f;
+		//TODO: Pixel based drawLine
+		/*glm::ivec2 aUV(0, y);
+		glm::ivec2 bUV(0, y);
 
-		float pixelWidth=fbo->getPixelWidth();
+		aUV.x=(a.fragCoord.x/a.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		aUV.y=(a.fragCoord.y/a.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		bUV.x=(b.fragCoord.x/b.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
+		bUV.y=(b.fragCoord.y/b.fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
 
-		int samples=1+640;
+		glm::vec2 dir;
+		if(bUV.x!=aUV.x)
+			dir=glm::vec2(1.0f, (float)(bUV.y-aUV.y)/(bUV.x-aUV.x));
+		else
+			dir=glm::vec2(1.0f, 0.0f);
 
-		count+=samples;
-
-		for(int i=0; i<=samples; i++)
+		int step=0;
+		do
 		{
-			a.interpolate(b, t, outputSlot3);
-			VertexShaderOutput *v = outputSlot3;
-			glm::vec4 fragColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-			v->fragCoord/=v->fragCoord.w;
-			if(fs)
-				fs(*v, &fragColor);
-
-			fbo->setPixel(glm::vec3(v->fragCoord), fragColor);
-			t+=1.0f/samples;
-		}
+		}while(aUV+t!=bUV.x);*/
 	}
 
 	void SRenderer::drawSpan(const VertexShaderOutput &a, const VertexShaderOutput &b, int y)
@@ -199,9 +196,6 @@ namespace SRenderer
 			y++;
 		}
 
-		//bottom->interpolate(*top, (y-bottomUV.y)/(topUV.y-bottomUV.y), outputSlot1);
-		//drawLine(*outputSlot1, *mid);
-
 		y = topUV.y;
 		while(topUV.y>midUV.y&&y>=midUV.y)
 		{
@@ -211,40 +205,5 @@ namespace SRenderer
 			drawSpan(*outputSlot1, *outputSlot2, y);
 			y--;
 		}
-
-
-		/*
-		// Step2 - Calculate how many samples do we need to draw a line from bottom to top
-		int samples=1+abs(mid->fragCoord.y/mid->fragCoord.w-bottom->fragCoord.y/bottom->fragCoord.w)/pixelWidth;
-		// Step 3 - Fill the triangle
-		for(int i=0; i<=samples; i++)
-		{
-			const float y = bottom->fragCoord.y+i*(mid->fragCoord.y-bottom->fragCoord.y)/samples;
-
-			if(abs(mid->fragCoord.y-bottom->fragCoord.y)<=1e-6) 
-				continue;
-
-			bottom->interpolate(*top, (y-bottom->fragCoord.y)/(top->fragCoord.y-bottom->fragCoord.y), outputSlot1);
-			bottom->interpolate(*mid, (y-bottom->fragCoord.y)/(mid->fragCoord.y-bottom->fragCoord.y), outputSlot2);
-
-			drawLine(*outputSlot1, *outputSlot2);
-			
-		}
-		
-		samples=100+abs(top->fragCoord.y/top->fragCoord.w-mid->fragCoord.y/mid->fragCoord.w)/pixelWidth;
-
-		// Step 4 - Fill the triangle
-		for(int i=0; i<=samples; i++)
-		{
-			const float y=top->fragCoord.y+i*(mid->fragCoord.y-top->fragCoord.y)/samples;
-
-			if(abs(mid->fragCoord.y-top->fragCoord.y)<=1e-6) 
-				continue;
-
-			top->interpolate(*bottom, (y-top->fragCoord.y)/(bottom->fragCoord.y-top->fragCoord.y), outputSlot1);
-			top->interpolate(*mid, (y-top->fragCoord.y)/(mid->fragCoord.y-top->fragCoord.y), outputSlot2);
-
-			drawLine(*outputSlot1, *outputSlot2);
-		}*/
 	}
 }

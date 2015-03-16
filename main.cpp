@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
+#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -69,7 +70,9 @@ int main(int argc, char *argv[])
     {
         if(glfwGetTime()-lastCheckTime>=1.0)
         {
-            glfwSetWindowTitle(window, std::to_string(fps).c_str());
+            char title[128];
+            sprintf(title, "CGHW2 fps: %d tris: %d", fps, mesh.indices.size()/3);
+            glfwSetWindowTitle(window, title);
             lastCheckTime=glfwGetTime();
             fps=0;
         }
@@ -78,14 +81,14 @@ int main(int argc, char *argv[])
         if(glfwGetKey(window, GLFW_KEY_DOWN)==GLFW_PRESS)
             x+=0.1;
 
-        model = glm::rotate(x, glm::vec3(0.0f, 1.0f, 0.0f));
-        //view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
         mvp = proj*view*model;
 
         count=0;
         // Render here
         render();
-        fprintf(stderr, "%d\n", count);
+        //fprintf(stderr, "%d\n", count);
         fps++;
 
         // Swap front and back buffers
