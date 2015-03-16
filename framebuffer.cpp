@@ -61,6 +61,23 @@ namespace SRenderer
 		}
 	}
 
+	void FrameBuffer::setPixel(int fragPixel_x, int fragPixel_y, float z, const glm::vec4 &color)
+	{
+		// cull pixels that are outside the window
+		if(fragPixel_x < 0 || fragPixel_x >= m_width || fragPixel_y < 0 || fragPixel_y >= m_height)
+			return;
+
+		int offset = fragPixel_y*m_width+fragPixel_x;
+
+		if(!m_enableDepthTest||z<m_depthBuffer[offset])
+		{
+			m_pixelBuffer[4*offset]=static_cast<int>(glm::clamp(color.b, 0.0f, 1.0f)*255.0f);
+			m_pixelBuffer[4*offset+1]=static_cast<int>(glm::clamp(color.g, 0.0f, 1.0f)*255.0f);
+			m_pixelBuffer[4*offset+2]=static_cast<int>(glm::clamp(color.r, 0.0f, 1.0f)*255.0f);
+			m_depthBuffer[offset]=z;
+		}
+	}
+
 	void FrameBuffer::clearBuffer()
 	{
 		int x, y;

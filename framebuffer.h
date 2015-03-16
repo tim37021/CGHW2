@@ -18,10 +18,15 @@ namespace SRenderer
 
 		//NDC
 		void setPixel(const glm::vec3 &pos, const glm::vec4 &color);
+		//Pixel based
+		void setPixel(int x, int y, float z, const glm::vec4 &color);
 
 		void clearBuffer();
 
 		void enableDepthTest(bool);
+
+		int getWidth() const{ return m_width; }
+		int getHeight() const{ return m_height; }
 
 		void upload() const;
 	private:
