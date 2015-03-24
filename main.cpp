@@ -18,8 +18,9 @@ static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
-glm::mat4 proj, view, model, mvp;
+glm::mat4 proj, view, model, vp;
 SRenderer::Mesh mesh;
+float time;
 
 int count=0;
 
@@ -68,6 +69,7 @@ int main(int argc, char *argv[])
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
+    	time=glfwGetTime();
         if(glfwGetTime()-lastCheckTime>=1.0)
         {
             char title[128];
@@ -83,7 +85,7 @@ int main(int argc, char *argv[])
 
         model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
         view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
-        mvp = proj*view*model;
+        vp = proj*view;
 
         count=0;
         // Render here
@@ -146,11 +148,9 @@ static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in
 {
     myVertexShaderOutput *vout = new myVertexShaderOutput();
 
-    const glm::vec4 &result=mvp*glm::vec4(in.pos, 1.0f);
-
-    vout->fragCoord=result;
     vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
     vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
+    vout->fragCoord=vp*glm::vec4(vout->worldPos, 1.0f);
     return vout;
 }
 

@@ -1,8 +1,8 @@
 #ifndef _FRAMEBUFFER_H_
 #define _FRAMEBUFFER_H_
 
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/glm.hpp>
+#include "texture.h"
 
 namespace SRenderer
 {
@@ -35,8 +35,8 @@ namespace SRenderer
 
 		//row major
 		//BGRA
-		unsigned char *m_pixelBuffer;
-		float *m_depthBuffer;
+		ImageTexture pixelTexture;
+		DepthTexture depthTexture;
 
 		//Settings
 		bool m_enableDepthTest;
