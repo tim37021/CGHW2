@@ -20,6 +20,7 @@ namespace SRenderer
 	class Texture
 	{
 	public:
+		Texture()=default;
 		Texture(int w, int h, T *ptr):
 			m_width(w), 
 			m_height(h), 
@@ -30,11 +31,12 @@ namespace SRenderer
 		int getWidth() const {return m_width;}
 		int getHeight() const {return m_height;}
 
+		operator bool() const { return m_buffer.get()!=nullptr; }
+
 		// Dangerous zone
 		void *data() const { return m_buffer.get(); }
 	protected:
 		std::shared_ptr<T> m_buffer;
-	private:
 		int m_width, m_height;
 	};
 
@@ -42,6 +44,7 @@ namespace SRenderer
 	{
 	public:
 		ImageTexture(int, int);
+		ImageTexture(const char *);
 
 		virtual void clear();
 
@@ -58,9 +61,9 @@ namespace SRenderer
 		// Overloading Texture's data method
 		unsigned char *data() const
 		{ return reinterpret_cast<unsigned char *>(m_buffer.get()); }
+	private:
+		void loadBMPImage(const char *filename);
 	};
-
-	ImageTexture LoadImage(const char *filename);
 
 	class DepthTexture: public Texture<float>
 	{

@@ -10,6 +10,7 @@
 #include <glm/gtx/transform.hpp>
 #include "framebuffer.h"
 #include "srenderer.h"
+#include "texture.h"
 
 static void render();
 static void keyCallback(GLFWwindow *, int, int, int, int);
@@ -18,6 +19,7 @@ static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 
 
 SRenderer::FrameBuffer *fbo;
 SRenderer::SRenderer *renderer;
+SRenderer::ImageTexture *text;
 glm::mat4 proj, view, model, vp;
 SRenderer::Mesh mesh;
 float time;
@@ -57,6 +59,8 @@ int main(int argc, char *argv[])
     fbo = new SRenderer::FrameBuffer(640, 640);
     fbo->enableDepthTest(true);
 
+    text = new SRenderer::ImageTexture("blade.bmp");
+
     //prepare renderer
     renderer = new SRenderer::SRenderer(fbo, myVertexShader, myFragmentShader);
 
@@ -90,7 +94,7 @@ int main(int argc, char *argv[])
         count=0;
         // Render here
         render();
-        //fprintf(stderr, "%d\n", count);
+
         fps++;
 
         // Swap front and back buffers
@@ -153,6 +157,7 @@ static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in
     vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
     vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
     vout->fragCoord=vp*glm::vec4(vout->worldPos, 1.0f);
+    vout->texCoord=in.texCoord;
     return vout;
 }
 
@@ -169,5 +174,7 @@ static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 
     float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(x, 0.0f, 0.0f)-vin.worldPos));
     specular = glm::max(specular, 0.0f);
 
-    *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);
+    glm::vec3 color(text->getPixel(vin.texCoord));
+
+    *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*color, 1.0f);
 }
