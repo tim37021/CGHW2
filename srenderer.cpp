@@ -28,19 +28,15 @@ namespace SRenderer
 		outputSlot1=nullptr;
 		outputSlot2=nullptr;
 		outputSlot3=nullptr;
-		for(int i=0; i<mesh.indices.size(); i+=3)
+		for(int i=0; i<mesh.faces.size(); i++)
 		{
-			int o=mesh.indices[i]-1;
-			int a=mesh.indices[i+1]-1;
-			int b=mesh.indices[i+2]-1;
-
 			VertexShaderOutput *vo, *va, *vb;
 			if(vs)
 			{
 				// Pass each to vertex shader if vs is not null
-				vo=vs(mesh.vertices[o]);
-				va=vs(mesh.vertices[a]);
-				vb=vs(mesh.vertices[b]);
+				vo=vs(mesh.faces[i].o);
+				va=vs(mesh.faces[i].a);
+				vb=vs(mesh.faces[i].b);
 			}
 			
 			outputSlot1=outputSlot1?outputSlot1: dynamic_cast<VertexShaderOutput *>(vo->clone());
@@ -104,7 +100,7 @@ namespace SRenderer
 		const VertexShaderOutput *left, *right;
 		if(aUV.x<bUV.x)
 		{
-			start=aUV.x;
+			start=glm::max<int>(aUV.x, 0);
 			left=&a;
 			right=&b;
 			end=bUV.x;

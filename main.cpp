@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         if(glfwGetTime()-lastCheckTime>=1.0)
         {
             char title[128];
-            sprintf(title, "CGHW2 fps: %d tris: %d", fps, mesh.indices.size()/3);
+            sprintf(title, "CGHW2 fps: %d tris: %d", fps, mesh.faces.size());
             glfwSetWindowTitle(window, title);
             lastCheckTime=glfwGetTime();
             fps=0;
@@ -123,6 +123,7 @@ struct myVertexShaderOutput: public SRenderer::VertexShaderOutput
 {
     glm::vec3 worldPos;
     glm::vec3 normal;
+    glm::vec2 texCoord;
 
     virtual void interpolate(
         const CBase &endValue,
@@ -134,6 +135,7 @@ struct myVertexShaderOutput: public SRenderer::VertexShaderOutput
         result->fragCoord=glm::mix(fragCoord, endValue2.fragCoord, t);
         result->worldPos=glm::mix(worldPos, endValue2.worldPos, t);
         result->normal=glm::mix(normal, endValue2.normal, t);
+        result->texCoord=glm::mix(texCoord, endValue2.texCoord, t);
     }
 
     virtual CBase *clone() const
@@ -164,7 +166,7 @@ static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 
     float diffuse=glm::dot(vin.normal, dir);
     diffuse=glm::max(diffuse, 0.0f);
 
-    float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(5.0f, 0.0f, 0.0f)-vin.worldPos));
+    float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(x, 0.0f, 0.0f)-vin.worldPos));
     specular = glm::max(specular, 0.0f);
 
     *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*glm::vec3(0.5f, 0.5f, 0.5f), 1.0f);

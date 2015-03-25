@@ -55,6 +55,34 @@ namespace SRenderer
 		raw_ptr[4*offset+2]=static_cast<int>(glm::clamp(color.r, 0.0f, 1.0f)*255.0f);
 	}
 
+	glm::vec4 ImageTexture::getPixel(int x, int y) const
+	{
+		unsigned char *raw_ptr=data();
+		int width=getWidth(), height=getHeight();
+
+		// cull pixels that are outside the window
+		x=glm::clamp<int>(x, 0, width-1);
+		y=glm::clamp<int>(y, 0, height-1);
+
+		int offset = y*width+x;
+
+		//BGRA -> RGBA
+		return glm::vec4(raw_ptr[offset*4+2]/255.0, 
+					raw_ptr[offset*4+1]/255.0, 
+					raw_ptr[offset*4]/255.0,
+					raw_ptr[offset*4+3]/255.0);
+	}
+
+	glm::vec4 ImageTexture::getPixel(const glm::vec2 &pos) const
+	{
+		int width=getWidth(), height=getHeight();
+		// We must convert NDC to window coordinate first
+		// [-1, 1] -> [0, width] and [0, height]
+		int x = (pos.x+1)*width/2.0f;
+		int y = (pos.y+1)*height/2.0f;
+		return getPixel(x, y);
+	}
+
 
 
 	DepthTexture::DepthTexture(int w, int h):

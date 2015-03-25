@@ -7,10 +7,13 @@
 
 namespace SRenderer
 {
+	struct Face
+	{
+		Vertex o, a, b;
+	};
 	struct Mesh
 	{
-		std::vector<Vertex> vertices;
-		std::vector<int> indices;
+		std::vector<Face> faces;
 	};
 
 	void loadObjMesh(std::istream &, Mesh *out);
