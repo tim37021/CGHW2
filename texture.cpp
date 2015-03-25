@@ -19,13 +19,12 @@ namespace SRenderer
 	void ImageTexture::clear()
 	{
 		int x, y;
-		int width=getWidth(), height=getHeight();
 		unsigned char *raw_ptr=data();
-		for(y=0; y<height; y++)
+		for(y=0; y<m_height; y++)
 		{
-			for(x=0; x<width; x++)
+			for(x=0; x<m_width; x++)
 			{
-				const int offset = y*width+x;
+				const int offset = y*m_width+x;
 				raw_ptr[4*offset]=0;
 				raw_ptr[4*offset+1]=0;
 				raw_ptr[4*offset+2]=0;
@@ -42,13 +41,12 @@ namespace SRenderer
 	void ImageTexture::setPixel(int fragPixel_x, int fragPixel_y, const glm::vec4 &color)
 	{
 		unsigned char *raw_ptr=data();
-		int width=getWidth(), height=getHeight();
 
-		// cull pixels that are outside the window
-		if(fragPixel_x < 0 || fragPixel_x >= width || fragPixel_y < 0 || fragPixel_y >= height)
-			return;
+		// Clamp to border
+		fragPixel_x=glm::clamp<int>(fragPixel_x, 0, m_width-1);
+		fragPixel_y=glm::clamp<int>(fragPixel_y, 0, m_height-1);
 
-		int offset = fragPixel_y*width+fragPixel_x;
+		int offset = fragPixel_y*m_width+fragPixel_x;
 
 		raw_ptr[4*offset]=static_cast<int>(glm::clamp(color.b, 0.0f, 1.0f)*255.0f);
 		raw_ptr[4*offset+1]=static_cast<int>(glm::clamp(color.g, 0.0f, 1.0f)*255.0f);
@@ -58,13 +56,12 @@ namespace SRenderer
 	glm::vec4 ImageTexture::getPixel(int x, int y) const
 	{
 		unsigned char *raw_ptr=data();
-		int width=getWidth(), height=getHeight();
 
 		// cull pixels that are outside the window
-		x=glm::clamp<int>(x, 0, width-1);
-		y=glm::clamp<int>(y, 0, height-1);
+		x=glm::clamp<int>(x, 0, m_width-1);
+		y=glm::clamp<int>(y, 0, m_height-1);
 
-		int offset = y*width+x;
+		int offset = y*m_width+x;
 
 		//BGRA -> RGBA
 		return glm::vec4(raw_ptr[offset*4+2]/255.0, 
@@ -119,13 +116,12 @@ namespace SRenderer
 	void DepthTexture::clear()
 	{
 		int x, y;
-		int width=getWidth(), height=getHeight();
 		float *raw_ptr=data();
-		for(y=0; y<height; y++)
+		for(y=0; y<m_height; y++)
 		{
-			for(x=0; x<width; x++)
+			for(x=0; x<m_width; x++)
 			{
-				const int offset = y*width+x;
+				const int offset = y*m_width+x;
 				raw_ptr[offset]=INF;
 			}
 		}
@@ -139,25 +135,23 @@ namespace SRenderer
 	void DepthTexture::setPixel(int fragPixel_x, int fragPixel_y, float depth)
 	{
 		float *raw_ptr=data();
-		int width=getWidth(), height=getHeight();
 
-		// cull pixels that are outside the window
-		if(fragPixel_x < 0 || fragPixel_x >= width || fragPixel_y < 0 || fragPixel_y >= height)
-			return;
+		// Clamp to border
+		fragPixel_x=glm::clamp<int>(fragPixel_x, 0, m_width-1);
+		fragPixel_y=glm::clamp<int>(fragPixel_y, 0, m_height-1);
 
-		int offset = fragPixel_y*width+fragPixel_x;
+		int offset = fragPixel_y*m_width+fragPixel_x;
 		raw_ptr[offset]=depth;
 	}
 
 	float DepthTexture::getPixel(int x, int y) const
 	{
 		float *raw_ptr=data();
-		int width=getWidth(), height=getHeight();
 
-		// cull pixels that are outside the window
-		x=glm::clamp<int>(x, 0, width-1);
-		y=glm::clamp<int>(y, 0, height-1);
+		// Clamp to border
+		x=glm::clamp<int>(x, 0, m_width-1);
+		y=glm::clamp<int>(y, 0, m_height-1);
 
-		return raw_ptr[y*width+x];
+		return raw_ptr[y*m_width+x];
 	}
 }
