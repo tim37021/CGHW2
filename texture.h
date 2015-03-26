@@ -31,6 +31,9 @@ namespace SRenderer
 		int getWidth() const {return m_width;}
 		int getHeight() const {return m_height;}
 
+		void assign(T *ptr)
+		{ m_buffer = std::shared_ptr<T>(ptr, ArrayDeleter<T>()); }
+
 		operator bool() const { return m_buffer.get()!=nullptr; }
 
 		// Dangerous zone

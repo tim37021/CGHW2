@@ -87,7 +87,7 @@ namespace SRenderer
 		const unsigned int height = image.height();
 		const unsigned int width  = image.width();
 
-		m_buffer = std::shared_ptr<unsigned char>(new unsigned char[4*height*width]);
+		assign(new unsigned char[4*height*width]);
 
 		unsigned char *raw_ptr=data();
 
