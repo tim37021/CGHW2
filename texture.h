@@ -37,7 +37,7 @@ namespace SRenderer
 		operator bool() const { return m_buffer.get()!=nullptr; }
 
 		// Dangerous zone
-		void *data() const { return m_buffer.get(); }
+		T *data() const { return m_buffer.get(); }
 	protected:
 		std::shared_ptr<T> m_buffer;
 		int m_width, m_height;
@@ -60,10 +60,6 @@ namespace SRenderer
 
 		void saveImage(const char *filename) const;
 
-		// Dangerous zone
-		// Overloading Texture's data method
-		unsigned char *data() const
-		{ return reinterpret_cast<unsigned char *>(m_buffer.get()); }
 	private:
 		void loadBMPImage(const char *filename);
 	};
@@ -81,11 +77,6 @@ namespace SRenderer
 
 		float getPixel(int x, int y) const;
 		float getPixel(const glm::vec2 &pos) const;
-
-		// Dangerous zone
-		// Overloading Texture's data method
-		float *data() const
-		{ return reinterpret_cast<float *>(m_buffer.get()); }
 	};
 }
 
