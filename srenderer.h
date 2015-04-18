@@ -14,6 +14,7 @@ namespace SRenderer
 
 		void setVertexShader(VertexShader);
 		void setFragmentShader(FragmentShader);
+		void setFrameBuffer(FrameBuffer *);
 
 		void render(const Mesh &);
 	private:
