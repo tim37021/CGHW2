@@ -14,16 +14,19 @@ Single-thread software renderer library. It is currently being refactored, which
 
 ### How to Use
   - Loading Mesh
+  
         SRenderer::Mesh mesh;
         // Load necessary files
         std::ifstream fin(argv[1]);
         SRenderer::loadObjMesh(fin, &mesh);
   - Creating Framebuffer and Renderer
+
         // Using default shader, if you want to do something, please inherit ShaderProgram class
         SRenderer::ShaderProgram sp;
         SRenderer::FrameBuffer fbo;
         renderer = new SRenderer::SRenderer(&fbo, &sp);
   - Rendering mesh
+
         fbo.clearBuffer();
         renderer.render(mesh);
         fbo.upload();
