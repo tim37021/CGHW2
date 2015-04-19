@@ -49,6 +49,8 @@ namespace SRenderer
 		ImageTexture(int, int);
 		ImageTexture(const char *);
 
+		void setClearColor(const glm::vec4 &color);
+		glm::vec4 getClearColor() const;
 		virtual void clear();
 
 		// color will be auto-clamped, [0, 1]
@@ -62,6 +64,7 @@ namespace SRenderer
 
 	private:
 		void loadBMPImage(const char *filename);
+		unsigned int m_clearColor;
 	};
 
 	class DepthTexture: public Texture<float>

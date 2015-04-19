@@ -3,17 +3,36 @@
 
 #define INF 999999
 
+#include <cstdio>
 namespace SRenderer
 {
 
 	ImageTexture::ImageTexture(int w, int h):
-		Texture(w, h, new unsigned char[4*w*h])
+		Texture(w, h, new unsigned char[4*w*h]),
+		m_clearColor(0)
 	{
 	}
 
 	ImageTexture::ImageTexture(const char *filename)
 	{
 		loadBMPImage(filename);
+	}
+
+	void ImageTexture::setClearColor(const glm::vec4 &color)
+	{
+		m_clearColor=static_cast<unsigned int>(glm::clamp(color.b, 0.0f, 1.0f)*255.0f)
+						|static_cast<unsigned int>(glm::clamp(color.g, 0.0f, 1.0f)*255.0f)<<8
+						|static_cast<unsigned int>(glm::clamp(color.r, 0.0f, 1.0f)*255.0f)<<16
+						|static_cast<unsigned int>(glm::clamp(color.a, 0.0f, 1.0f)*255.0f)<<24;
+
+	}
+
+	glm::vec4 ImageTexture::getClearColor() const
+	{
+		return glm::vec4(((m_clearColor>>16)&(0xFF))/255.0f,
+						((m_clearColor>>8)&(0xFF))/255.0f,
+						((m_clearColor)&(0xFF))/255.0f,
+						((m_clearColor>>24)&(0xFF))/255.0f);
 	}
 
 	void ImageTexture::clear()
@@ -25,10 +44,8 @@ namespace SRenderer
 			for(x=0; x<m_width; x++)
 			{
 				const int offset = y*m_width+x;
-				raw_ptr[4*offset]=0;
-				raw_ptr[4*offset+1]=0;
-				raw_ptr[4*offset+2]=0;
-				raw_ptr[4*offset+3]=0;
+				unsigned int *raw_ptr_uint=reinterpret_cast<unsigned int *>(&raw_ptr[4*offset]);
+				*raw_ptr_uint=m_clearColor;
 			}
 		}
 	}
