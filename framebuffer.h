@@ -28,6 +28,8 @@ namespace SRenderer
 		int getWidth() const{ return m_width; }
 		int getHeight() const{ return m_height; }
 
+		void resize(int, int);
+
 		void upload() const;
 	private:
 		int m_width, m_height;
