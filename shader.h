@@ -18,7 +18,17 @@ namespace SRenderer
 		virtual CBase *clone() const;
 	};
 
-	typedef VertexShaderOutput *(*VertexShader)(const Vertex &);
-	typedef void (*FragmentShader)(const VertexShaderOutput &, glm::vec4 *);
+	class ShaderProgram
+	{
+	public:
+		virtual VertexShaderOutput *callVertexShader(const Vertex &v)
+		{
+			VertexShaderOutput *vout = new VertexShaderOutput;
+			vout->fragCoord=glm::vec4(v.pos, 1.0f);
+			return vout;
+		}
+		virtual void callFragmentShader(const VertexShaderOutput &vso, glm::vec4 *out)
+		{ *out=glm::vec4(1.0f); }
+	};
 }
 #endif

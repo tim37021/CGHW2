@@ -28,6 +28,70 @@ int count=0;
 
 float x=5.0f;
 
+struct myVertexShaderOutput: public SRenderer::VertexShaderOutput
+{
+    glm::vec3 worldPos;
+    glm::vec3 normal;
+    glm::vec2 texCoord;
+
+    virtual void interpolate(
+        const CBase &endValue,
+        float t,
+        CBase *out) const
+    {
+        myVertexShaderOutput *result=dynamic_cast<myVertexShaderOutput *>(out);
+        const myVertexShaderOutput &endValue2=dynamic_cast<const myVertexShaderOutput &>(endValue);
+        result->fragCoord=glm::mix(fragCoord, endValue2.fragCoord, t);
+        result->worldPos=glm::mix(worldPos, endValue2.worldPos, t);
+        result->normal=glm::mix(normal, endValue2.normal, t);
+        result->texCoord=glm::mix(texCoord, endValue2.texCoord, t);
+    }
+
+    virtual CBase *clone() const
+    {
+        myVertexShaderOutput *result = new myVertexShaderOutput();
+        *result = *this;
+        return result;
+    }
+};
+
+class myShaderProgram: public SRenderer::ShaderProgram
+{
+public:
+    myShaderProgram()
+        :light_pos(10.f)
+    {
+
+    }
+    virtual SRenderer::VertexShaderOutput *callVertexShader(const SRenderer::Vertex &in)
+    {
+        myVertexShaderOutput *vout = new myVertexShaderOutput();
+
+        vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
+        vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
+        vout->fragCoord=vp*glm::vec4(vout->worldPos, 1.0f);
+        vout->texCoord=in.texCoord;
+        return vout;
+    }
+    virtual void callFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out)
+    {
+        const myVertexShaderOutput &vin=static_cast<const myVertexShaderOutput &>(in);
+
+        const glm::vec3 &dir=glm::normalize(light_pos-vin.worldPos);
+        float diffuse=glm::dot(vin.normal, dir);
+        diffuse=glm::max(diffuse, 0.0f);
+
+        float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(x, 0.0f, 0.0f)-vin.worldPos));
+        specular = glm::max(specular, 0.0f);
+
+        glm::vec3 color(text->getPixel(vin.texCoord));
+
+        *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*color, 1.0f);
+    }
+private:
+    glm::vec3 light_pos;
+};
+
 int main(int argc, char *argv[])
 {
     GLFWwindow* window;
@@ -61,8 +125,9 @@ int main(int argc, char *argv[])
 
     text = new SRenderer::ImageTexture("blade.bmp");
 
+    myShaderProgram msp;
     //prepare renderer
-    renderer = new SRenderer::SRenderer(fbo, myVertexShader, myFragmentShader);
+    renderer = new SRenderer::SRenderer(fbo, &msp);
 
     proj = glm::perspective(45.0f, 1.0f, 0.01f, 10.0f);
     view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -121,60 +186,4 @@ static void keyCallback(
 {
     if(key==GLFW_KEY_ESCAPE&&action==GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}
-
-struct myVertexShaderOutput: public SRenderer::VertexShaderOutput
-{
-    glm::vec3 worldPos;
-    glm::vec3 normal;
-    glm::vec2 texCoord;
-
-    virtual void interpolate(
-        const CBase &endValue,
-        float t,
-        CBase *out) const
-    {
-        myVertexShaderOutput *result=dynamic_cast<myVertexShaderOutput *>(out);
-        const myVertexShaderOutput &endValue2=dynamic_cast<const myVertexShaderOutput &>(endValue);
-        result->fragCoord=glm::mix(fragCoord, endValue2.fragCoord, t);
-        result->worldPos=glm::mix(worldPos, endValue2.worldPos, t);
-        result->normal=glm::mix(normal, endValue2.normal, t);
-        result->texCoord=glm::mix(texCoord, endValue2.texCoord, t);
-    }
-
-    virtual CBase *clone() const
-    {
-        myVertexShaderOutput *result = new myVertexShaderOutput();
-        *result = *this;
-        return result;
-    }
-};
-
-static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in)
-{
-    myVertexShaderOutput *vout = new myVertexShaderOutput();
-
-    vout->worldPos=glm::vec3(model*glm::vec4(in.pos, 1.0f));
-    vout->normal=glm::vec3(model*glm::vec4(in.normal, 1.0f));
-    vout->fragCoord=vp*glm::vec4(vout->worldPos, 1.0f);
-    vout->texCoord=in.texCoord;
-    return vout;
-}
-
-glm::vec3 light_pos(10.0f, 10.0f, 10.0f);
-
-static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out)
-{
-    const myVertexShaderOutput &vin=static_cast<const myVertexShaderOutput &>(in);
-
-    const glm::vec3 &dir=glm::normalize(light_pos-vin.worldPos);
-    float diffuse=glm::dot(vin.normal, dir);
-    diffuse=glm::max(diffuse, 0.0f);
-
-    float specular = glm::dot(glm::reflect(-dir, vin.normal), glm::normalize(glm::vec3(x, 0.0f, 0.0f)-vin.worldPos));
-    specular = glm::max(specular, 0.0f);
-
-    glm::vec3 color(text->getPixel(vin.texCoord));
-
-    *out = glm::vec4(glm::pow(specular, 10.0f)*glm::vec3(1.0f, 1.0f, 1.0f)+glm::vec3(0.05f, 0.05f, 0.05f)+diffuse*color, 1.0f);
 }

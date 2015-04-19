@@ -7,19 +7,10 @@
 namespace SRenderer
 {
 
-	SRenderer::SRenderer(FrameBuffer *fbo_, VertexShader vs_, FragmentShader fs_):
-		fbo(fbo_), vs(vs_), fs(fs_)
+	SRenderer::SRenderer(FrameBuffer *fbo_, ShaderProgram *sp_):
+		fbo(fbo_), sp(sp_), m_enableBackfaceCulling(true)
 	{
 
-	}
-
-	void SRenderer::setVertexShader(VertexShader vs_)
-	{
-		vs=vs_;
-	}
-	void SRenderer::setFragmentShader(FragmentShader fs_)
-	{
-		fs=fs_;
 	}
 
 	void SRenderer::setFrameBuffer(FrameBuffer *fbo_)
@@ -29,19 +20,20 @@ namespace SRenderer
 
 	void SRenderer::render(const Mesh &mesh)
 	{
+		if(!sp)
+			return;
+
 		outputSlot1=nullptr;
 		outputSlot2=nullptr;
 		outputSlot3=nullptr;
 		for(int i=0; i<mesh.faces.size(); i++)
 		{
 			VertexShaderOutput *vo, *va, *vb;
-			if(vs)
-			{
-				// Pass each to vertex shader if vs is not null
-				vo=vs(mesh.faces[i].o);
-				va=vs(mesh.faces[i].a);
-				vb=vs(mesh.faces[i].b);
-			}
+
+			// Pass each to vertex shader if vs is not null
+			vo=sp->callVertexShader(mesh.faces[i].o);
+			va=sp->callVertexShader(mesh.faces[i].a);
+			vb=sp->callVertexShader(mesh.faces[i].b);
 			
 			outputSlot1=outputSlot1?outputSlot1: dynamic_cast<VertexShaderOutput *>(vo->clone());
 			outputSlot2=outputSlot2?outputSlot2: dynamic_cast<VertexShaderOutput *>(vo->clone());
@@ -53,7 +45,7 @@ namespace SRenderer
 			glm::vec3 bb(vb->fragCoord.x, vb->fragCoord.y, 0);
 
 			glm::vec3 oa=aa-oo, ob=bb-oo;
-			if(glm::cross(oa, ob).z>0)
+			if(!m_enableBackfaceCulling||glm::cross(oa, ob).z>0)
 			{
 				// Call to SRenderer::drawTriangle
 				drawFilledTriangle(*vo, *va, *vb);
@@ -125,8 +117,7 @@ namespace SRenderer
 
 			glm::vec4 fragColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-			if(fs)
-				fs(*outputSlot3, &fragColor);
+			sp->callFragmentShader(*outputSlot3, &fragColor);
 			fbo->setPixel(x, y, outputSlot3->fragCoord.z, fragColor);
 
 			x++;

@@ -10,18 +10,18 @@ namespace SRenderer
 	class SRenderer
 	{
 	public:
-		SRenderer(FrameBuffer *, VertexShader, FragmentShader);
+		SRenderer(FrameBuffer *, ShaderProgram *);
 
-		void setVertexShader(VertexShader);
-		void setFragmentShader(FragmentShader);
 		void setFrameBuffer(FrameBuffer *);
+		void enableBackfaceCulling(bool value)
+		{ m_enableBackfaceCulling=value; }
 
 		void render(const Mesh &);
 	private:
-		VertexShader vs;
-		FragmentShader fs;
+		ShaderProgram *sp;
 		FrameBuffer *fbo;
 		VertexShaderOutput *outputSlot1, *outputSlot2, *outputSlot3;
+		bool m_enableBackfaceCulling;
 		
 		void drawSpan(const VertexShaderOutput &a, const VertexShaderOutput &b, int y);
 		void drawLine(const VertexShaderOutput &a, const VertexShaderOutput &b);
