@@ -55,7 +55,9 @@ namespace SRenderer
 	FrameBuffer::~FrameBuffer()
 	{
 		glDeleteTextures(1, &m_texture);
-		//glDeleteVertexArrays(1, &vao);
+		glDeleteVertexArrays(1, &m_glvao);
+		glDeleteBuffers(1, &m_glvbo);
+		glDeleteBuffers(1, &m_glibo);
 	}
 
 	void FrameBuffer::getCanvasSize(int *width, int *height) const

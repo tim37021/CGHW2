@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 
 #define abs(a) (a>=0?(a):-(a))
-extern int count;
 
 namespace SRenderer
 {
@@ -122,8 +121,7 @@ namespace SRenderer
 
 			sp->callFragmentShader(*outputSlot3, &fragColor);
 			fbo->setPixel(x, y, outputSlot3->fragCoord.z, fragColor);
-			count++;
-
+			
 			x++;
 		}
 	}
