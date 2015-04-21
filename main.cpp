@@ -100,6 +100,8 @@ int main(int argc, char *argv[])
     if (!glfwInit())
         return -1;
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     // Create a windowed mode window and its OpenGL context
     window = glfwCreateWindow(640, 640, "CGHW2", NULL, NULL);
     if (!window)
@@ -108,13 +110,14 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    // Make the window's context current
+    glfwMakeContextCurrent(window);
+
+    glewExperimental=GL_TRUE;
     glewInit();
 
     // Prepare event callback functions
     glfwSetKeyCallback(window, keyCallback);
-
-    // Make the window's context current
-    glfwMakeContextCurrent(window);
 
     // Load necessary files
     std::ifstream fin(argv[1]);
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
             x+=0.1;
 
         model = glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(glm::vec3(x, 0.0f, 0.0f), glm::vec3(0), glm::vec3(0.0f, 1.0f, 0.0f));
         vp = proj*view;
 
         count=0;

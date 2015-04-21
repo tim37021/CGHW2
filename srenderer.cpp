@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #define abs(a) (a>=0?(a):-(a))
+extern int count;
 
 namespace SRenderer
 {
@@ -96,7 +97,7 @@ namespace SRenderer
 		const VertexShaderOutput *left, *right;
 		if(aUV.x<bUV.x)
 		{
-			start=glm::max<int>(aUV.x, 0);
+			start=aUV.x;
 			left=&a;
 			right=&b;
 			end=bUV.x;
@@ -108,7 +109,9 @@ namespace SRenderer
 			end=aUV.x;
 		}
 
-		int x=start;
+		end=glm::clamp<int>(end, 0, fbo->getWidth());
+
+		int x=glm::clamp<int>(start, 0, fbo->getWidth());
 
 		while(x>=start&&x<=end)
 		{
@@ -119,6 +122,7 @@ namespace SRenderer
 
 			sp->callFragmentShader(*outputSlot3, &fragColor);
 			fbo->setPixel(x, y, outputSlot3->fragCoord.z, fragColor);
+			count++;
 
 			x++;
 		}
@@ -176,7 +180,11 @@ namespace SRenderer
 		topUV.x=(top->fragCoord.x/top->fragCoord.w+1.0f)*fbo->getWidth()/2.0f;
 		topUV.y=(top->fragCoord.y/top->fragCoord.w+1.0f)*fbo->getHeight()/2.0f;
 
-		int y = bottomUV.y;
+		// culling for speed
+		if(bottomUV.y>=fbo->getHeight()||topUV.y<=0)
+			return;
+		int y = bottomUV.y>=0?bottomUV.y:0;
+
 		while(bottomUV.y<midUV.y&&y<=midUV.y)
 		{
 			bottom->interpolate(*top, (float)(y-bottomUV.y)/(topUV.y-bottomUV.y), outputSlot1);
@@ -186,7 +194,7 @@ namespace SRenderer
 			y++;
 		}
 
-		y = topUV.y;
+		y = topUV.y<=fbo->getHeight()? topUV.y: fbo->getHeight();
 		while(topUV.y>midUV.y&&y>=midUV.y)
 		{
 			top->interpolate(*bottom, (float)(y-topUV.y)/(bottomUV.y-topUV.y), outputSlot1);

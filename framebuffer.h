@@ -34,6 +34,7 @@ namespace SRenderer
 	private:
 		int m_width, m_height;
 		unsigned int m_texture;
+		unsigned int m_glvao, m_glvbo, m_glshader, m_glibo;
 
 		//row major
 		//BGRA
@@ -42,6 +43,9 @@ namespace SRenderer
 
 		//Settings
 		bool m_enableDepthTest;
+
+		void setupGLStuff();
+		void resetGLTexture();
 	};
 }
 
