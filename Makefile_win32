@@ -4,7 +4,7 @@ AR=ar
 
 CXXFLAGS = -std=c++0x -DGLEW_STATIC -O2 -I./inc
 CCFLAGS = -std=c99 -DGLEW_STATIC -O2 -I./inc
-LIBS = -L./lib -lglfw3 -lGL -lm -ldl -lXinerama -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -lpthread
+LIBS = -L./lib -lglfw3_win32 -lopengl32 -lgdi32
 
 OUT_EXE = HW2.exe
 OUT_LIB = libSRenderer.a
