@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
         if(glfwGetTime()-lastCheckTime>=1.0)
         {
             char title[128];
-            sprintf(title, "CGHW2 fps: %d tris: %d", fps, mesh.faces.size());
+            sprintf(title, "CGHW2 fps: %d tris: %lu", fps, mesh.faces.size());
             glfwSetWindowTitle(window, title);
             lastCheckTime=glfwGetTime();
             fps=0;
