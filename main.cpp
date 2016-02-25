@@ -17,12 +17,12 @@ static void keyCallback(GLFWwindow *, int, int, int, int);
 static SRenderer::VertexShaderOutput *myVertexShader(const SRenderer::Vertex &in);
 static void myFragmentShader(const SRenderer::VertexShaderOutput &in, glm::vec4 *out);
 
-SRenderer::FrameBuffer *fbo;
-SRenderer::SRenderer *renderer;
-SRenderer::ImageTexture *text;
-glm::mat4 proj, view, model, vp;
-SRenderer::Mesh mesh;
-float time;
+static SRenderer::FrameBuffer *fbo;
+static SRenderer::SRenderer *renderer;
+static SRenderer::ImageTexture *text;
+static glm::mat4 proj, view, model, vp;
+static SRenderer::Mesh mesh;
+static float my_time;
 
 int count=0;
 
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
-    	time=glfwGetTime();
+    	my_time=glfwGetTime();
         if(glfwGetTime()-lastCheckTime>=1.0)
         {
             char title[128];
